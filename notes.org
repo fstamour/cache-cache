@@ -1,0 +1,43 @@
+TODOs:
+
+- (x) Initialize correctly
+- get the GitLab access token
+- get the list of projects
+- get the list of issues
+- ( ) index everything
+- (-) start "cron jobs" to update the database
+- ( ) set the *root* correctly
+- (x) start the web server
+- (x) print the port
+
+- ( ) Update projects periodically
+- (x) Update issues periodically
+- ( ) Add epic
+- ( ) Add front-end
+- ( ) Keep a "recent" list
+
+- ( ) Yack-shaving: use websocket to update the page (without losing
+the state) when we update a component.
+
+- ( ] Use dexador instead of drakma
+
+|#
+
+#| Resources:
+
+- [hunchentoot's manual](https://edicl.github.io/hunchentoot/)
+- [local-time's manual](https://local-time.common-lisp.dev/manual.html)
+
+## Indexing with montezuma
+
+- https://github.com/sharplispers/montezuma/blob/master/TUTORIAL.md
+- https://github.com/sharplispers/montezuma/blob/master/tests/corpora/pastes-1000/paste-search.lisp
+
+## Fuzzy match
+
+https://github.com/vindarel/fuzzy-match
+
+## Parenscript
+
+- [homepage](https://parenscript.common-lisp.dev/)
+- [manual](https://parenscript.common-lisp.dev/)
