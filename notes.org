@@ -1,43 +1,34 @@
-TODOs:
 
-- (x) Initialize correctly
-- get the GitLab access token
-- get the list of projects
-- get the list of issues
-- ( ) index everything
-- (-) start "cron jobs" to update the database
-- ( ) set the *root* correctly
-- (x) start the web server
-- (x) print the port
+* Tasks
+** TODO Add a readme
+** TODO [#A] Add a test system
+** TODO [#B] Don't use serapeum for vujs templates
+** TODO Update projects periodically
+** TODO Get all epics
+** TODO Keep a "recently viewed" list
 
-- ( ) Update projects periodically
-- (x) Update issues periodically
-- ( ) Add epic
-- ( ) Add front-end
-- ( ) Keep a "recent" list
+It would be nice if that list was persistant.
 
-- ( ) Yack-shaving: use websocket to update the page (without losing
+** TODO Yack-shaving: use websocket to update the page (without losing
 the state) when we update a component.
+** TODO Use dexador instead of drakma
+** TODO Save issues to disk
 
-- ( ] Use dexador instead of drakma
+* Resources:
 
-|#
+- [[https://edicl.github.io/hunchentoot/][hunchentoot's manual]]
+- [[https://local-time.common-lisp.dev/manual.html][local-time's manual]]
 
-#| Resources:
-
-- [hunchentoot's manual](https://edicl.github.io/hunchentoot/)
-- [local-time's manual](https://local-time.common-lisp.dev/manual.html)
-
-## Indexing with montezuma
+** Indexing with montezuma
 
 - https://github.com/sharplispers/montezuma/blob/master/TUTORIAL.md
 - https://github.com/sharplispers/montezuma/blob/master/tests/corpora/pastes-1000/paste-search.lisp
 
-## Fuzzy match
+** Fuzzy match
 
 https://github.com/vindarel/fuzzy-match
 
-## Parenscript
+** Parenscript
 
-- [homepage](https://parenscript.common-lisp.dev/)
-- [manual](https://parenscript.common-lisp.dev/)
+- [[https://parenscript.common-lisp.dev/][homepage]]
+- [[https://parenscript.common-lisp.dev/][manual]]
