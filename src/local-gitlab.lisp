@@ -41,22 +41,40 @@
 
 ;;; Handlers
 
-(defun find-issues (query issue-list key)
+(defun search-in-list (needle list
+                       &key
+                         (key #'identity)
+                         (test #'string-equal))
+  "Return the items that has NEEDLE in KEY."
+  (remove-if-not
+   #'(lambda (item)
+       (search needle (funcall key item) :test test))
+   list))
+
+(defun search-in-list/and (needle-list list
+                           &key
+                             (key #'identity)
+                             (test #'string-equal))
+  "Return the items that has all needles from NEEDLE-LIST in KEY."
+  (loop
+    :for needle :in needle-list
+    :for candidates = (search-in-list needle list :key key :test test)
+      :then (search-in-list needle candidates :key key :test test)
+    :finally (return candidates)))
+
+(defun find-issues (query)
   "Return the issues that contains all the parts of QUERY in their KEY."
-  (flet ((search-issues (needle issue-list key)
-           "Return the issues that has NEEDLE in KEY."
-           (loop
-             :for issue :in issue-list
-             :when (search needle (funcall key issue)
-                           :test #'string-equal)
-               :collect issue)))
-    (loop
-      :for needle :in (split-sequence:split-sequence
-                       #\Space query
-                       :remove-empty-subseqs t)
-      :for candidates = (search-issues needle issue-list key)
-        :then (search-issues needle candidates key)
-      :finally (return candidates))))
+  (search-in-list/and
+   (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
+   (a:hash-table-values *issues*)
+   :key #'issue-title))
+
+(defun find-projects (query)
+  "Return the issues that contains all the parts of QUERY in their KEY."
+  (search-in-list/and
+   (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
+   (a:hash-table-values *projects*)
+   :key #'item-name-with-namespace))
 
 (defmacro with-json-array-to-string ((var) &body body)
   "Macro to help print a big array as json into a string."
@@ -88,8 +106,8 @@
 
 (defun issues-created-in-the-last-7-days ()
   (let ((last-week (lt:adjust-timestamp
-                    (lt:today)
-                    (offset :day -7))))
+                       (lt:today)
+                     (offset :day -7))))
     (remove-if #'(lambda (issue)
                    (lt:timestamp<
                     (lt:parse-rfc3339-timestring (issue-created-at issue))
@@ -100,13 +118,21 @@
 (defun handler/search (query)
   (setf (hunchentoot:content-type*) "text/javascript")
   (with-json-array-to-string (json)
+    ;; Add projects
+    (when (str:non-empty-string-p query)
+      (loop :for project :in (find-projects query)
+            :do (shasht:write-json
+                 (a:alist-hash-table
+                  `(("id" . ,(item-id project))
+                    ("text" . ,(item-name-with-namespace project))
+                    ("url" . ,(format nil "~a/issues" (item-web-url project)))))
+                 json)))
+    ;; Add issues
     (loop
       :for issue :in
                  (sort
                   (if (str:non-empty-string-p query)
-                      (find-issues query
-                                   (a:hash-table-values *issues*)
-                                   #'issue-title)
+                      (find-issues query)
                       (issues-created-in-the-last-7-days))
                   #'compare-issues)
       :do (shasht:write-json

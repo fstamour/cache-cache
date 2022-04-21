@@ -259,7 +259,9 @@ send to GitLab for authentication"
                "due_date" "id" "iid"
                "labels" "project_id"
                "state"
-               "title" "name" "updated_at" "web_url")
+               "title" "name" "updated_at" "web_url"
+               "path" "path_with_namespace"
+               "name_with_namespace")
              :for property-name = (a:symbolicate (string-upcase (kebab:to-kebab-case property-key)))
              :for getter-name = (a:symbolicate '#:item- property-name)
              :for predicate-name = (a:symbolicate '#:item- property-name '#:-p)
