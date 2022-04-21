@@ -137,15 +137,16 @@ send to GitLab for authentication"
            *root-group-id*)))
 
 
-(defun by-id (vector-of-hash-table &optional destination)
+(defun by-id (sequence-of-hash-table &optional destination)
   "Convert a sequence of items to a map of id -> item."
-  (loop
-    :with result = (or destination (make-hash-table :test #'equal))
-    :for item :across vector-of-hash-table
-    ;; Converting to string because montezuma only stores strings
-    :for id = (princ-to-string (gethash "id" item))
-    :do (setf (gethash id result) item)
-    :finally (return result)))
+  (let ((result (or destination (make-hash-table :test #'equal))))
+    (map nil
+         #'(lambda (item
+                    ;; Converting to string because montezuma only stores strings
+                    &aux (id (princ-to-string (gethash "id" item))))
+             (setf (gethash id result) item))
+         sequence-of-hash-table)
+    result))
 
 (defvar *projects* nil)
 
@@ -250,7 +251,7 @@ send to GitLab for authentication"
         (setf *issues* (by-id (get-all-issues))))))
 
 
-;;; Common getter
+;;; Common getters
 
 #.`(progn
      ,@(loop :for property-key :in
@@ -272,3 +273,37 @@ send to GitLab for authentication"
                          (multiple-value-bind (,property-name present-p)
                              (gethash ,property-key item)
                            (and present-p (not (eq :null ,property-name))))))))
+
+
+;;; Caching
+
+(defvar *issue-cache-pathname*
+  (merge-pathnames "issue-cache.sbin"
+                   (asdf:system-source-directory :local-gitlab)))
+
+(defun write-cache ()
+  (simpbin:with-output-to-binary-file (output *issue-cache-pathname*
+                                              :if-exists :supersede)
+    (simpbin:write-header output)
+    (let ((*print-pretty* nil))
+      (loop :for issue-id
+              :being :the :hash-key :of *issues*
+                :using (hash-value issue)
+            :do (simpbin:write-binary-string
+                 (shasht:write-json issue nil)
+                 output)))))
+
+(defun read-cache ()
+  (when (probe-file *issue-cache-pathname*)
+    (simpbin:with-input-from-binary-file (input *issue-cache-pathname*)
+      (simpbin:read-header input)
+      (by-id
+       (loop
+         :for json-string = (handler-case (simpbin:read-binary-string input)
+                              (end-of-file (condition)
+                                (declare (ignore condition))))
+         :while json-string
+         :for issue = (shasht:read-json json-string)
+         :collect issue)))))
+
+;; (write-cache)

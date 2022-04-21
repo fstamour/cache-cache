@@ -5,12 +5,4 @@
   (:local-nicknames (#:h #:hunchentoot)
                     (#:a #:alexandria)
                     (#:lt #:local-time))
-  (:import-from
-   #:parenscript
-   #:ps
-   #:new
-   #:create
-   #:chain
-   #:var
-   #:lisp)
   (:export #:main))

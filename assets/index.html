@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GitLab </title>
+
+    <style>
+      .center {
+          margin: auto;
+          width: 50em;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="content" class="center">
+      <input type="text" id="query"></input>
+      <div>
+        <ol id="results">
+        </ol>
+      </div>
+    </div>
+
+    <script>
+      function debounce(delay, fn) {
+          let timer;
+          return function() {
+              let self = this;
+              let args = arguments;
+              clearTimeout(timer);
+              timer = setTimeout(() =>
+                  fn.apply(self, args),
+                  delay
+              );
+          };
+      };
+
+      function search(query) {
+          const { queryString } = query;
+          return fetch(`/search?q=${encodeURIComponent(queryString)}`)
+              .then((response) => response.json());
+      }
+
+      function makeItemElement(item) {
+          var text = item.text;
+          if(item.closed) {
+              text = '(closed) ' + text;
+          }
+          return document.createTextNode(text);
+      }
+
+      function makeItemLink(item) {
+          let link = document.createElement('a');
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.href = item.url;
+          link.appendChild(makeItemElement(item));
+          return link;
+      }
+
+      function makeResultsElements(results) {
+          return results.map((item) => {
+              let element = document.createElement('li');
+              element.appendChild(makeItemLink(item));
+              return element;
+          });
+      }
+
+      const makeUpdater = (queryInput, resultsElement) => {
+          return () => {
+              search({
+                  queryString: queryInput.value
+              })
+                  .then((results) => {
+                      resultsElement.replaceChildren(...makeResultsElements(results));
+                  });
+          };
+      }
+
+      function main() {
+          const queryInput = document.getElementById('query');
+          const resultsElement = document.getElementById('results');
+          const update = makeUpdater(queryInput, resultsElement);
+
+          queryInput.onkeyup = debounce(250, update);
+
+          update();
+      }
+
+      main();
+    </script>
+  </body>
+</html>

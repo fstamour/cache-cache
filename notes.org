@@ -5,6 +5,10 @@
 ** TODO [#B] Don't use serapeum for vujs templates
 ** TODO Update projects periodically
 ** TODO Get all epics
+** TODO Get all labels
+
+Could be inferred from the issues
+
 ** TODO Keep a "recently viewed" list
 
 It would be nice if that list was persistant.
@@ -13,6 +17,7 @@ It would be nice if that list was persistant.
 the state) when we update a component.
 ** TODO Use dexador instead of drakma
 ** TODO Save issues to disk
+** TODO Show the issues' project
 
 * Resources:
 

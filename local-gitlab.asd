@@ -21,16 +21,15 @@
    ;; logging
    #:log4cl
    ;; web server
-   #:spinneret
    #:hunchentoot
    #:find-port
-   #:parenscript
-   #:froute
-   ;; text indexing and manipulation
+   ;; string manipulation
    #:kebab
-   #:fuzzy-match
+   #:str
    ;; parsing time
    #:local-time
+   ;; For persistent caching
+   #:simpbin
    ;; Others
    #:cl-cron)
   :pathname "src"
@@ -38,7 +37,6 @@
   :components
   ((:file "package")
    (:file "gitlab-client")
-   (:file "spinneret-patch")
    (:file "local-gitlab")))
 
 (asdf:defsystem #:local-gitlab/config
