@@ -76,22 +76,28 @@
    (a:hash-table-values *projects*)
    :key #'item-name-with-namespace))
 
-(defmacro with-json-array-to-string ((stream) &body body)
+(defmacro with-json-array ((stream
+                            &optional (writer-var (gensym "writer")))
+                           &body body)
   "Macro to help print a big array as json into a string."
-  (a:with-gensyms (writer-var)
-    `(let ((,writer-var (com.inuoe.jzon:make-json-writer :stream ,stream)))
-       (com.inuoe.jzon:with-array ,writer-var
-         (flet ((write-value (value)
-                  (com.inuoe.jzon:write-values ,writer-var value)))
-           ,@body)))))
+  `(let ((,writer-var (com.inuoe.jzon:make-json-writer :stream ,stream)))
+     (com.inuoe.jzon:with-array ,writer-var
+       (flet ((write-value (value)
+                (com.inuoe.jzon:write-value ,writer-var value))
+              (write-object (&rest kvp)
+                (apply #'com.inuoe.jzon:write-object ,writer-var kvp)))
+         (declare (ignorable (function write-value)
+                             (function write-object)))
+         ,@body))))
 
 #+ (or)
 (with-output-to-string (output)
-  (with-json-array-to-string (output)
-    (write-value
-     `(("id" . 42)
-       ("text" . "name of this")
-       ("url" . "some url")))))
+  (with-json-array (output)
+    (write-value "some text")
+    (write-object
+     "id" 42
+     "text" "name of this"
+     "url" "some url")))
 
 (defun timestamp-string< (a b)
   (lt:timestamp<
@@ -128,7 +134,7 @@
     `(progn
        (setf (hunchentoot:content-type*) "text/javascript")
        (with-open-stream (,stream-var (h:send-headers))
-         (with-json-array-to-string (,stream-var)
+         (with-json-array (,stream-var)
            ,@body)))))
 
 (defun handler/search (query)
@@ -136,10 +142,10 @@
     ;; Add projects
     (when (str:non-empty-string-p query)
       (loop :for project :in (find-projects query)
-            :do (write-value
-                 `(("id" . ,(item-id project))
-                   ("text" . ,(item-name-with-namespace project))
-                   ("url" . ,(format nil "~a/issues" (item-web-url project)))))))
+            :do (write-object
+                 "id"  (item-id project)
+                 "text" (item-name-with-namespace project)
+                 "url" (format nil "~a/issues" (item-web-url project)))))
     ;; Add issues
     (loop
       :for issue :in
@@ -148,11 +154,11 @@
                       (find-issues query)
                       (issues-created-in-the-last-7-days))
                   #'compare-issues)
-      :do (write-value
-           `(("id" . ,(issue-id issue))
-             ("text" . ,(issue-title issue))
-             ("url" . ,(issue-web-url issue))
-             ("closed" . ,(issue-closed-at-p issue)))))))
+      :do (write-object
+           "id" (issue-id issue)
+           "text" (issue-title issue)
+           "url" (issue-web-url issue)
+           "closed" (issue-closed-at-p issue)))))
 
 (h:define-easy-handler (search-gitlab :uri "/search")
     ((query :parameter-type 'string :request-type :get :real-name "q"))
@@ -173,18 +179,21 @@
 (h:define-easy-handler (issues :uri "/issues") ()
   "Return _ALL_ issues."
   (with-streaming-json-array ()
-    (loop
-      :for issue :in (a:hash-table-values *issues*)
-      :do (write-value
-           `(("id" . ,(issue-id issue))
-             ("text" . ,(issue-title issue)))))))
+    (maphash
+     #'(lambda (id issue)
+         (write-object
+          "id" id
+          "text" (issue-title issue)))
+     *issues*)))
 
 (h:define-easy-handler (projects :uri "/projects") ()
   "Return _ALL_ projects."
   (with-streaming-json-array ()
-    (loop
-      :for project :in (a:hash-table-values *projects*)
-      :do (write-value project))))
+    (maphash
+     #'(lambda (id project)
+         (declare (ignore id))
+         (write-value project))
+     *projects*)))
 
 
 ;;; Initialization

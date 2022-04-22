@@ -277,7 +277,7 @@ send to GitLab for authentication"
                            (and present-p (not (eq :null ,property-name))))))))
 
 
-;;; Caching
+;;; Persistent cache
 
 (defvar *issue-cache-pathname*
   (merge-pathnames "issue-cache.sbin"
