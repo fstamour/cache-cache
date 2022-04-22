@@ -17,7 +17,7 @@
    ;; TODO replace drakma by #:dexador
    #:drakma
    ;; For JSON handling
-   #:shasht
+   #:com.inuoe.jzon
    ;; logging
    #:log4cl
    ;; web server

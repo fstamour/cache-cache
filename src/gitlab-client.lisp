@@ -114,7 +114,7 @@ send to GitLab for authentication"
     (log:debug "Making a request to GitLab: \"~a\"..." uri)
     (setf *last-headers* headers)
     (list
-     (shasht:read-json (flexi-streams:octets-to-string body))
+     (com.inuoe.jzon:parse body)
      headers)))
 
 (defun http-request-get-all (uri)
@@ -287,13 +287,12 @@ send to GitLab for authentication"
   (simpbin:with-output-to-binary-file (output *issue-cache-pathname*
                                               :if-exists :supersede)
     (simpbin:write-header output)
-    (let ((*print-pretty* nil))
-      (loop :for issue-id
-              :being :the :hash-key :of *issues*
-                :using (hash-value issue)
-            :do (simpbin:write-binary-string
-                 (shasht:write-json issue nil)
-                 output)))))
+    (loop :for issue-id
+            :being :the :hash-key :of *issues*
+              :using (hash-value issue)
+          :do (simpbin:write-binary-string
+               (com.inuoe.jzon:stringify issue :stream nil)
+               output))))
 
 (defun read-cache ()
   (when (probe-file *issue-cache-pathname*)
@@ -305,7 +304,5 @@ send to GitLab for authentication"
                               (end-of-file (condition)
                                 (declare (ignore condition))))
          :while json-string
-         :for issue = (shasht:read-json json-string)
+         :for issue = (com.inuoe.jzon:parse json-string)
          :collect issue)))))
-
-;; (write-cache)
