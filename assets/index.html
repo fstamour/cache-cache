@@ -8,19 +8,41 @@
           margin: auto;
           width: 50em;
       }
+
+      #query {
+          width: 100%;
+      }
+
+      #results {
+          margin-top: 1em;
+      }
+
+      #results td {
+          vertical-align: top;
+          width: 1%; /* trick to have same sized columns */
+      }
+
+      #results thead td {
+          border-bottom: 1px solid cornflowerblue;
+      }
+
+      #results tbody td:not(:last-child) {
+          border-right: 1px solid cornflowerblue;
+      }
     </style>
   </head>
   <body>
 
     <div id="content" class="center">
       <input type="text" id="query"></input>
-      <div>
-        <ol id="results">
-        </ol>
+      <div id="results">
       </div>
     </div>
 
     <script>
+      /**************************************************/
+      /* Generic utilities */
+
       function debounce(delay, fn) {
           let timer;
           return function() {
@@ -34,45 +56,93 @@
           };
       };
 
+      const complement = f => x => !f(x);
+
+      /**************************************************/
+      /* DOM utilities */
+
+      const isElement = x => x.tagName || x.nodeName;
+
+      function t(tagName) {
+          const args = Array.prototype.slice.call(arguments, 1).flat();
+          const children = args.filter(isElement);
+          const options = Object.assign({}, ...args.filter(complement(isElement)));
+          const element = document.createElement(tagName);
+          for(let key of Object.keys(options)) {
+              element[key] = options[key];
+          }
+          element.replaceChildren(...children);
+          return element;
+      }
+
+      function text(string) {
+          return document.createTextNode(string);
+      }
+
+      /**************************************************/
+      /* Domain-specific utilities */
+
+      const isProject = item => item.type === "project";
+      const isIssue = item => item.type === "issue";
+
+      /**************************************************/
+      /* DOM creation */
+
+      const makeItemText = (item) =>
+            text(item.closed
+                 ? `(closed) ${item.text}`
+                 : item.text);
+
+      const makeItemLink = (item) =>
+            t('a',
+              {
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  href: item.url
+              },
+              makeItemText(item)
+             );
+
+
+      const makeResultsList = (results) =>
+            t('ol', results.map((item) => t('li', makeItemLink(item))));
+
+
+      function render(resultsElement, results) {
+          const projects = results.filter(isProject);
+          const projectList = makeResultsList(projects);
+
+          const issues = results.filter(isIssue);
+          const closed = issues.filter(issue => issue.closed).length;
+
+          const issueList = makeResultsList(issues);
+
+          resultsElement.replaceChildren(
+              t('table',
+                t('thead',
+                  t('tr',
+                    t('td', text(`Projects (${projects.length})`)),
+                    t('td', text(`Issues (${issues.length - closed} open, ${closed} closed)`)))),
+                t('tbody',
+                  t('tr',
+                    t('td', projectList),
+                    t('td', issueList)))));
+      }
+
+      /**************************************************/
+      /* Putting it all together */
+
       function search(query) {
           const { queryString } = query;
           return fetch(`/search?q=${encodeURIComponent(queryString)}`)
               .then((response) => response.json());
       }
 
-      function makeItemElement(item) {
-          var text = item.text;
-          if(item.closed) {
-              text = '(closed) ' + text;
-          }
-          return document.createTextNode(text);
-      }
-
-      function makeItemLink(item) {
-          let link = document.createElement('a');
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          link.href = item.url;
-          link.appendChild(makeItemElement(item));
-          return link;
-      }
-
-      function makeResultsElements(results) {
-          return results.map((item) => {
-              let element = document.createElement('li');
-              element.appendChild(makeItemLink(item));
-              return element;
-          });
-      }
-
       const makeUpdater = (queryInput, resultsElement) => {
           return () => {
               search({
                   queryString: queryInput.value
-              })
-                  .then((results) => {
-                      resultsElement.replaceChildren(...makeResultsElements(results));
-                  });
+              }).then((results) => render(resultsElement, results));
           };
       }
 

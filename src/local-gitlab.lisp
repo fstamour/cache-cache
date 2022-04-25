@@ -143,6 +143,7 @@
     (when (str:non-empty-string-p query)
       (loop :for project :in (find-projects query)
             :do (write-object
+                 "type" "project"
                  "id"  (item-id project)
                  "text" (item-name-with-namespace project)
                  "url" (format nil "~a/issues" (item-web-url project)))))
@@ -155,6 +156,7 @@
                       (issues-created-in-the-last-7-days))
                   #'compare-issues)
       :do (write-object
+           "type" "issue"
            "id" (issue-id issue)
            "text" (issue-title issue)
            "url" (issue-web-url issue)

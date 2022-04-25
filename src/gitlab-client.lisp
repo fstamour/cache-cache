@@ -139,11 +139,9 @@ send to GitLab for authentication"
 
 (defun by-id (sequence-of-hash-table &optional destination)
   "Convert a sequence of items to a map of id -> item."
-  (let ((result (or destination (make-hash-table :test #'equal))))
+  (let ((result (or destination (make-hash-table))))
     (map nil
-         #'(lambda (item
-                    ;; Converting to string because montezuma only stores strings
-                    &aux (id (princ-to-string (gethash "id" item))))
+         #'(lambda (item &aux (id (gethash "id" item)))
              (setf (gethash id result) item))
          sequence-of-hash-table)
     result))
@@ -158,7 +156,7 @@ send to GitLab for authentication"
 (defun remove-moved-issues (issues)
   "Remove issues that were moved"
   (remove-if-not #'(lambda (issue)
-                     (eq :null (gethash "moved_to_id" issue)))
+                     (eq 'null (gethash "moved_to_id" issue)))
                  issues))
 
 (defvar *issues* nil)
@@ -166,9 +164,8 @@ send to GitLab for authentication"
 ;; (when *issues* (hash-table-count *issues*))
 
 
-;; Listing all the possible issue properties (used to generate the
-;; list of property-key in the next form
-#+nil
+;; Listing all the possible issue properties
+#+ (or)
 (loop
   :with keys = (make-hash-table :test 'equal)
   :for issue :in (a:hash-table-values *issues*)
@@ -194,11 +191,11 @@ send to GitLab for authentication"
                                   property-key)
                          (gethash ,property-key issue))
                        (defun ,predicate-name (issue)
-                         ,(format nil "Return true if the ISSUE has a \"~a\" and is not :null."
+                         ,(format nil "Return true if the ISSUE has a \"~a\" and is not 'null."
                                   property-key)
                          (multiple-value-bind (,property-name present-p)
                              (gethash ,property-key issue)
-                           (and present-p (not (eq :null ,property-name))))))))
+                           (and present-p (not (eq 'null ,property-name))))))))
 
 (defun find-last-update-time (issues)
   "Given a hash-table of ISSUES, find the lastest update-time."
@@ -226,6 +223,14 @@ send to GitLab for authentication"
             *base-uri*
             *root-group-id*))))
 
+#+ (or)
+(by-id
+ (car (http-request-gitlab
+   (format nil
+           "~a/groups/~a/issues?per_page=10"
+           *base-uri*
+           *root-group-id*))))
+
 (defun get-new-and-updated-issues ()
   (let ((new-and-updated-issues
           (http-request-get-all
@@ -248,7 +253,8 @@ send to GitLab for authentication"
         (by-id (get-new-and-updated-issues) *issues*))
       (progn
         (log:info "Getting all the issues from GitLab...")
-        (setf *issues* (by-id (get-all-issues))))))
+        (setf *issues* (by-id (get-all-issues)))
+        (log:info "Got all the issues."))))
 
 
 ;;; Common getters
@@ -270,11 +276,11 @@ send to GitLab for authentication"
                                   property-key)
                          (gethash ,property-key item))
                        (defun ,predicate-name (item)
-                         ,(format nil "Return true if the ITEM has a \"~a\" and is not :null."
+                         ,(format nil "Return true if the ITEM has a \"~a\" and is not 'null."
                                   property-key)
                          (multiple-value-bind (,property-name present-p)
                              (gethash ,property-key item)
-                           (and present-p (not (eq :null ,property-name))))))))
+                           (and present-p (not (eq 'null ,property-name))))))))
 
 
 ;;; Persistent cache
