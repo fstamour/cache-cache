@@ -114,7 +114,7 @@ send to GitLab for authentication"
     (log:debug "Making a request to GitLab: \"~a\"..." uri)
     (setf *last-headers* headers)
     (list
-     (com.inuoe.jzon:parse body)
+     (jzon:parse body)
      headers)))
 
 (defun http-request-get-all (uri)
@@ -163,6 +163,9 @@ send to GitLab for authentication"
 
 ;; (when *issues* (hash-table-count *issues*))
 
+;; TODO Maybe make a modifier too (see serapeum)
+(defun issue-by-id (id)
+  (gethash id *issues*))
 
 ;; Listing all the possible issue properties
 #+ (or)
@@ -297,7 +300,7 @@ send to GitLab for authentication"
             :being :the :hash-key :of *issues*
               :using (hash-value issue)
           :do (simpbin:write-binary-string
-               (com.inuoe.jzon:stringify issue :stream nil)
+               (jzon:stringify issue :stream nil)
                output))))
 
 (defun read-cache ()
@@ -310,5 +313,5 @@ send to GitLab for authentication"
                               (end-of-file (condition)
                                 (declare (ignore condition))))
          :while json-string
-         :for issue = (com.inuoe.jzon:parse json-string)
+         :for issue = (jzon:parse json-string)
          :collect issue)))))

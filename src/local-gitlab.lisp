@@ -76,25 +76,16 @@
    (a:hash-table-values *projects*)
    :key #'item-name-with-namespace))
 
-(defmacro with-json-array ((stream
-                            &optional (writer-var (gensym "writer")))
-                           &body body)
+(defmacro with-json-array ((stream) &body body)
   "Macro to help print a big array as json into a string."
-  `(let ((,writer-var (com.inuoe.jzon:make-json-writer :stream ,stream)))
-     (com.inuoe.jzon:with-array ,writer-var
-       (flet ((write-value (value)
-                (com.inuoe.jzon:write-value ,writer-var value))
-              (write-object (&rest kvp)
-                (apply #'com.inuoe.jzon:write-object ,writer-var kvp)))
-         (declare (ignorable (function write-value)
-                             (function write-object)))
-         ,@body))))
+  `(jzon:with-writer* (:stream ,stream)
+     (jzon:with-array* ,@body)))
 
 #+ (or)
 (with-output-to-string (output)
   (with-json-array (output)
-    (write-value "some text")
-    (write-object
+    (write-value* "some text")
+    (write-object*
      "id" 42
      "text" "name of this"
      "url" "some url")))
@@ -142,7 +133,7 @@
     ;; Add projects
     (when (str:non-empty-string-p query)
       (loop :for project :in (find-projects query)
-            :do (write-object
+            :do (write-object*
                  "type" "project"
                  "id"  (item-id project)
                  "text" (item-name-with-namespace project)
@@ -155,7 +146,7 @@
                       (find-issues query)
                       (issues-created-in-the-last-7-days))
                   #'compare-issues)
-      :do (write-object
+      :do (write-object*
            "type" "issue"
            "id" (issue-id issue)
            "text" (issue-title issue)
@@ -183,7 +174,7 @@
   (with-streaming-json-array ()
     (maphash
      #'(lambda (id issue)
-         (write-object
+         (write-object*
           "id" id
           "text" (issue-title issue)))
      *issues*)))
@@ -194,7 +185,7 @@
     (maphash
      #'(lambda (id project)
          (declare (ignore id))
-         (write-value project))
+         (write-value* project))
      *projects*)))
 
 
