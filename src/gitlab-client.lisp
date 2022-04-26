@@ -1,7 +1,5 @@
 (in-package #:local-gitlab)
 
-(defvar *token* nil
-  "The token used to authenticate with GitLab.")
 
 (defun initialize-gitlab-token ()
   "Initialize the *token* special variable."
@@ -146,7 +144,6 @@ send to GitLab for authentication"
          sequence-of-hash-table)
     result))
 
-(defvar *projects* nil)
 
 (defun initialize-projects ()
   "Get all projects from GitLab's *root-group-id* (recursively), store them by id."
@@ -159,9 +156,6 @@ send to GitLab for authentication"
                      (eq 'null (gethash "moved_to_id" issue)))
                  issues))
 
-(defvar *issues* nil)
-
-;; (when *issues* (hash-table-count *issues*))
 
 ;; TODO Maybe make a modifier too (see serapeum)
 (defun issue-by-id (id)

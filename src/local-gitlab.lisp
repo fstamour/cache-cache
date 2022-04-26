@@ -3,15 +3,6 @@
 
 ;;; Web server
 
-(defvar *root*
-  (merge-pathnames "assets/"
-                   (asdf:system-source-directory :local-gitlab)))
-
-(defvar *server* (make-instance
-                  'h:easy-acceptor
-                  :port (find-port:find-port :interface "127.0.0.1"))
-  "The server instance")
-
 (defun start-server ()
   "Start the web server"
   ;; TODO we should find-port here...
@@ -77,7 +68,7 @@
    :key #'item-name-with-namespace))
 
 (defmacro with-json-array ((stream) &body body)
-  "Macro to help print a big array as json into a string."
+  "Macro to help print a big array as json into a stream."
   `(jzon:with-writer* (:stream ,stream)
      (jzon:with-array* ,@body)))
 
@@ -229,7 +220,15 @@
 ;; (main)
 
 (defun quit ()
+  (log:info "Stopping cron...")
   (cl-cron:stop-cron)
-  (h:stop *server*)
+  (log:info "Cron stopped.")
+  (log:info "Stopping huchentoot...")
+  (h:stop *server* :soft t)
+  (log:info "Huchentoot stopped.")
+  (log:info "Writing the persistent cache...")
   (write-cache)
-  (uiop:quit))
+  (log:info "Persistent cache written.")
+  (log:info "Quitting...")
+  (uiop:quit)
+  (log:info "Bye!"))

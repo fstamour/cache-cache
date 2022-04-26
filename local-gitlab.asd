@@ -36,6 +36,7 @@
   :serial t
   :components
   ((:file "package")
+   (:file "variables")
    (:file "gitlab-client")
    (:file "local-gitlab")))
 
