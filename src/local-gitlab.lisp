@@ -204,13 +204,15 @@
             (hash-table-count *projects*)))
 
 (defun main ()
+  ;; TODO (uiop/image:raw-command-line-arguments)
   (unless *root-group-id*
     (format t "~&Please enter the root-group-id: ")
+    (finish-output)
     (setf *root-group-id* (read-line)))
   (initialize-gitlab-token)
   (initialize-projects)
   (alexandria:if-let ((issues (read-cache)))
-    (setf *issues* issues))
+      (setf *issues* issues))
   (initialize-issues)
   (log-stats)
   (start-server)

@@ -1,2 +1,4 @@
 ﻿*.sbin
 *.fasl
+result
+local-gitlab
