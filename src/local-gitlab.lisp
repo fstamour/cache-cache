@@ -203,6 +203,9 @@
             (hash-table-count *issues*)
             (hash-table-count *projects*)))
 
+;; TODO Add command line interface
+;; https://docs.stevelosh.com/adopt/usage/
+
 (defun main ()
   ;; TODO (uiop/image:raw-command-line-arguments)
   (unless *root-group-id*
@@ -217,7 +220,9 @@
   (log-stats)
   (start-server)
   (start-cron)
-  (log:info "Server started on \"http://localhost:~a\"." (server-port)))
+  (log:info "Server started on \"http://localhost:~a\"." (server-port))
+  ;; TODO Keep the thread alive (if running as an executable)
+  )
 
 ;; (main)
 

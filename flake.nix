@@ -42,98 +42,83 @@
           lispLibs = with pkgs.lispPackages_new.sbclPackages; [alexandria flexi-streams fast-io nibbles];
         };
 
-        local-gitlab-system = pkgs.lispPackages_new.build-asdf-system {
-          pname = "local-gitlab";
-          version = "0.0.1";
+        lispLibs =  with pkgs.lispPackages_new.sbclPackages;
+          [
+            drakma
+            log4cl
+            hunchentoot
+            find-port
+            kebab
+            str
+            local-time
+            cl-cron
+            adopt
 
-          src = ./.;
-          inherit lisp;
-          lispLibs = with pkgs.lispPackages_new.sbclPackages;
-            [
-              drakma
-              log4cl
-              hunchentoot
-              find-port
-              kebab
-              str
-              local-time
-              cl-cron
+            jzon
+            simpbin
+          ];
 
-              jzon
-              simpbin
-            ];
-
-         meta = {
-           homepage = "https://github.com/fstamour/local-gitlab";
-           description = "Caching gitlab issues and more locally, for bazingly fast search";
-           license = pkgs.lib.licenses.mit;
-           maintainers = [ pkgs.maintainers.mpsyco ];
-         };
+        meta = {
+          homepage = "https://github.com/fstamour/${name}";
+          description = "Caching gitlab issues and more locally, for bazingly fast search";
+          license = pkgs.lib.licenses.mit;
+          maintainers = [ pkgs.maintainers.mpsyco ];
         };
 
-        local-gitlab = pkgs.lispPackages_new.build-asdf-system {
-          pname = "local-gitlab";
+        asdf-system-attrs = {
+          pname = "${name}";
           version = "0.0.1";
 
           src = ./.;
           inherit lisp;
-          lispLibs = with pkgs.lispPackages_new.sbclPackages;
-            [
-              drakma
-              log4cl
-              hunchentoot
-              find-port
-              kebab
-              str
-              local-time
-              cl-cron
+          inherit lispLibs;
+          inherit meta;
+        };
 
-              jzon
-              simpbin
-            ];
+        asdf-system = pkgs.lispPackages_new.build-asdf-system asdf-system-attrs;
 
-         buildScript = pkgs.writeText "build-local-gitlab.lisp" ''
+        application = pkgs.lispPackages_new.build-asdf-system asdf-system-attrs // {
+          buildScript = pkgs.writeText "build-${name}.lisp" ''
           (require :asdf)
-          (asdf:load-system '#:local-gitlab)
-          (sb-ext:save-lisp-and-die "local-gitlab"
+          (asdf:load-system '#:${name})
+          (sb-ext:save-lisp-and-die "${name}"
             :executable t
-            :toplevel #'local-gitlab:main)
+            :toplevel #'${name}:main)
          '';
 
-         nativeBuildInputs = [ pkgs.makeWrapper ];
-         installPhase = ''
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          installPhase = ''
           source $stdenv/setup
           mkdir -p $out/bin
-          mv local-gitlab $out/bin
-          wrapProgram $out/bin/local-gitlab \
+          mv ${name} $out/bin
+          wrapProgram $out/bin/${name} \
             --prefix LD_LIBRARY_PATH : $LD_LIBRARY_PATH
           '';
-
-         meta = {
-           homepage = "https://github.com/fstamour/local-gitlab";
-           description = "Caching gitlab issues and more locally, for bazingly fast search";
-           license = pkgs.lib.licenses.mit;
-           maintainers = [ pkgs.maintainers.mpsyco ];
-         };
         };
 
         sbclWithPackages = (pkgs.lispPackages_new.sbclWithPackages
-          (p: [ local-gitlab-system ]));
+          (p: [
+            asdf-system
+            p.swank
+            p.slynk
+          ]));
 
-        run = pkgs.writeScriptBin "run"
+        start-swank-listener = pkgs.writeScriptBin "swank"
           ''
           ${pkgs.rlwrap}/bin/rlwrap ${sbclWithPackages}/bin/sbcl --noinform \
-            --eval "(require '#:local-gitlab)"
+            --eval "(asdf:load-system '#:${name})" \
+            --eval "(asdf:load-system '#:swank)" \
+            --eval "(swank:create-server :dont-close t)"
           '';
       in {
-        packages.default = local-gitlab;
+        packages.default = application;
 
-        devShell = pkgs.mkShell {
+        devShells.default = pkgs.mkShell {
           buildInputs = [
             sbclWithPackages
             pkgs.rlwrap
-            local-gitlab
-            run
+            application
+            start-swank-listener
           ];
         };
       }
