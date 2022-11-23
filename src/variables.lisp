@@ -1,6 +1,5 @@
 (in-package #:local-gitlab)
 
-;; TODO This should be in appdata or xdg
 (defvar *root*
   (merge-pathnames "assets/"
                    (asdf:system-source-directory :local-gitlab)))
@@ -14,6 +13,7 @@
 
 ;; (when *issues* (hash-table-count *issues*))
 
+;; TODO This should be run much later, especially the find-port
 (defvar *server*
   (let ((address "127.0.0.1"))
     (make-instance

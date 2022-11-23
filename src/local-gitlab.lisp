@@ -211,11 +211,17 @@
             (hash-table-count *issues*)
             (hash-table-count *projects*)))
 
+(defun read-config ()
+  (let ((config-file (uiop/configuration:xdg-config-home "local-gitlab" "config.lisp")))
+    (when (probe-file config-file))
+    (let ((*package* (find-package 'local-gitlab.config)))
+      (load config-file))))
+
 ;; TODO Add command line interface
 ;; https://docs.stevelosh.com/adopt/usage/
 
 (defun main ()
-  ;; TODO (uiop/image:raw-command-line-arguments)
+  (read-config)
   (unless *root-group-id*
     (format t "~&Please enter the root-group-id: ")
     (finish-output)
