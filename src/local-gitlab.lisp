@@ -115,9 +115,10 @@
   (a:with-gensyms (stream-var)
     `(progn
        (setf (hunchentoot:content-type*) "text/javascript")
-       (with-open-stream (,stream-var (h:send-headers))
+       (let ((,stream-var (h:send-headers)))
          (with-json-array (,stream-var)
-           ,@body)))))
+           ,@body)
+         (finish-output ,stream-var)))))
 
 (defun handler/search (query)
   (with-streaming-json-array ()
