@@ -97,9 +97,7 @@
                (scheme-file "build-local-gitlab.lisp"
                             #~((require :asdf)
                                (asdf:load-system '#:local-gitlab)
-                               (sb-ext:save-lisp-and-die "local-gitlab"
-                                                         :executable t
-                                                         :toplevel (function local-gitlab:main)))
+                               (uiop/image:dump-image "local-gitlab" :executable t))
                             #:splice? #t)))
           (with-imported-modules '((guix build utils))
                                  #~(let ((bin (string-append #$output "/bin")))

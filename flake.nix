@@ -85,9 +85,7 @@
           buildScript = pkgs.writeText "build-${name}.lisp" ''
           (require :asdf)
           (asdf:load-system '#:${name})
-          (sb-ext:save-lisp-and-die "${name}"
-            :executable t
-            :toplevel #'${name}:main)
+          (uiop/image:dump-image "${name}" :executable t)
          '';
 
           # To make runtime depedencies (like openssl) available.

@@ -4,15 +4,22 @@
 ;;; Web server
 
 (defun start-server ()
-  "Start the web server"
+  "Start the web server."
   ;; TODO we should find-port here...
   (log:info "Starting web server...")
   (h:start *server*)
   (log:info "Web server started."))
 
 (defun server-port ()
-  ;; Get the port
+  "Get the port the server is listening to."
   (h:acceptor-port *server*))
+
+(defun server-thread ()
+  "Get the server's main thread."
+  (slot-value
+   (slot-value *server* 'h::taskmaster)
+   'h::acceptor-process))
+
 
 
 ;;; Static files
@@ -222,11 +229,15 @@
   (write-cache)
   (start-server)
   (start-cron)
-  (log:info "Server started on \"http://localhost:~a\"." (server-port))
-  ;; TODO Keep the thread alive (if running as an executable)
-  )
+  (log:info "Server started on \"http://localhost:~a\"." (server-port)))
 
-;; (main)
+(defun main-cli (args)
+  (main)
+  (bt:join-thread (server-thread)))
+
+(defparameter uiop/image:*image-entry-point*
+  #'(lambda ()
+      (main-cli (uiop/image:raw-command-line-arguments))))
 
 (defun quit ()
   (log:info "Stopping cron...")

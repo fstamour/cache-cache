@@ -9,4 +9,4 @@
   (:import-from #:com.inuoe.jzon
                 #:write-value*
                 #:write-object*)
-  (:export #:main))
+  (:export #:main #:main-cli #:quit))
