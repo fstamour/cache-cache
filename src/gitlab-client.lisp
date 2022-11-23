@@ -282,12 +282,13 @@ send to GitLab for authentication"
 
 ;;; Persistent cache
 
-(defvar *issue-cache-pathname*
+(defun issue-cache-pathname ()
   (merge-pathnames "issue-cache.sbin"
-                   (asdf:system-source-directory :local-gitlab)))
+                   (ensure-directories-exist
+                    (uiop/configuration:xdg-cache-home "local-gitlab/"))))
 
 (defun write-cache ()
-  (simpbin:with-output-to-binary-file (output *issue-cache-pathname*
+  (simpbin:with-output-to-binary-file (output (issue-cache-pathname)
                                               :if-exists :supersede)
     (simpbin:write-header output)
     (loop :for issue-id
@@ -298,8 +299,9 @@ send to GitLab for authentication"
                output))))
 
 (defun read-cache ()
-  (when (probe-file *issue-cache-pathname*)
-    (simpbin:with-input-from-binary-file (input *issue-cache-pathname*)
+  (alexandria:if-let ((issue-cache-pathname
+                       (probe-file (issue-cache-pathname))))
+    (simpbin:with-input-from-binary-file (input issue-cache-pathname)
       (simpbin:read-header input)
       (by-id
        (loop
