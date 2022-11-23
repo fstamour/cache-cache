@@ -75,9 +75,13 @@
           inherit meta;
         };
 
+        # A derivation for the lisp system
         asdf-system = pkgs.lispPackages_new.build-asdf-system asdf-system-attrs;
 
+        # A derivation for an executable for the lisp system
         application = pkgs.lispPackages_new.build-asdf-system asdf-system-attrs // {
+          # Load the system, specify a top-level function and dump the
+          # executable core.
           buildScript = pkgs.writeText "build-${name}.lisp" ''
           (require :asdf)
           (asdf:load-system '#:${name})
@@ -86,7 +90,10 @@
             :toplevel #'${name}:main)
          '';
 
+          # To make runtime depedencies (like openssl) available.
           nativeBuildInputs = [ pkgs.makeWrapper ];
+
+          # Wrap the executable, keep only the executable as output.
           installPhase = ''
           source $stdenv/setup
           mkdir -p $out/bin
@@ -96,6 +103,8 @@
           '';
         };
 
+
+        # A version of sbcl with some systems for development.
         sbclWithPackages = (pkgs.lispPackages_new.sbclWithPackages
           (p: [
             asdf-system
@@ -103,12 +112,37 @@
             p.slynk
           ]));
 
+        # A small script to launch sbcl with swank started and the system loaded.
+        # TODO we probably won't need this if we configure emacs to start sbcl
         start-swank-listener = pkgs.writeScriptBin "swank"
           ''
           ${pkgs.rlwrap}/bin/rlwrap ${sbclWithPackages}/bin/sbcl --noinform \
             --eval "(asdf:load-system '#:${name})" \
             --eval "(asdf:load-system '#:swank)" \
             --eval "(swank:create-server :dont-close t)"
+          '';
+
+        emacs-setup-slime = pkgs.writeTextFile {
+          name = "setup-slime.el";
+          text = ''
+           (let ((slime-directory "${pkgs.lispPackages_new.sbclPackages.swank}"))
+             (add-to-list 'load-path slime-directory)
+             (require 'slime-autoloads)
+             (setq slime-backend (expand-file-name "swank-loader.lisp" slime-directory))
+             (setq slime-path slime-directory)
+             (slime-setup '(slime-fancy)))
+
+            (setq slime-lisp-implementations
+             `((sbcl ("${sbclWithPackages}/bin/sbcl" "--no-sysinit" "--no-userinit"
+                     "--eval" "(require 'asdf)"))))
+
+          '';
+        };
+
+        # Small script to load slime (swank's emacs client) using emacsclient
+        swank-emacsclient = pkgs.writeScriptBin "swank-emacsclient"
+          ''
+          ${pkgs.emacs}/bin/emacsclient -n --eval "(load \"${emacs-setup-slime}\")"
           '';
       in {
         packages.default = application;
@@ -119,6 +153,7 @@
             pkgs.rlwrap
             application
             start-swank-listener
+            swank-emacsclient
           ];
         };
       }
