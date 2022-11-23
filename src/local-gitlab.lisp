@@ -219,6 +219,7 @@
       (setf *issues* issues))
   (initialize-issues)
   (log-stats)
+  (write-cache)
   (start-server)
   (start-cron)
   (log:info "Server started on \"http://localhost:~a\"." (server-port))
