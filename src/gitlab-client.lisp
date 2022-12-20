@@ -134,6 +134,19 @@ send to GitLab for authentication"
            *base-uri*
            *root-group-id*)))
 
+;; I can't find a way to ask gitlab for "new or updated project" using
+;; their rest api.
+;; Perhaps I could order_by=created_at to find the new projects
+;; and order_by=updated_at to find the updated_projects?
+
+#+ (or)
+(http-request-gitlab
+ (format nil
+         "~a/groups/~a/projects?per_page=5&include_subgroups=true&order_by=updated_at"
+         *base-uri*
+         *root-group-id*
+         "2022-11-01T00:00:00.000-05:00"))
+
 
 (defun by-id (sequence-of-hash-table &optional destination)
   "Convert a sequence of items to a map of id -> item."
@@ -194,19 +207,22 @@ send to GitLab for authentication"
                              (gethash ,property-key issue)
                            (and present-p (not (eq 'null ,property-name))))))))
 
+(defun find-latest (objects field)
+  "Given a hash-table of OBJECTS, find the FIELD with the latest time."
+  (loop
+    :with latest = nil
+    :for id :being :the :hash-key :of objects :using (hash-value object)
+    :for current = (lt:parse-timestring (gethash field object))
+    :if (null latest)
+      :do (setf latest current)
+    :else
+      :do (when (lt:timestamp< latest current)
+            (setf latest current))
+    :finally (return latest)))
+
 (defun find-last-update-time (issues)
   "Given a hash-table of ISSUES, find the lastest update-time."
-  (loop
-    :with last-updated-at = nil
-    :for id :being :the :hash-key :of issues :using (hash-value issue)
-    :for updated-at = (lt:parse-timestring
-                       (gethash "updated_at" issue))
-    :if (null last-updated-at)
-      :do (setf last-updated-at updated-at)
-    :else
-      :do (when (lt:timestamp< last-updated-at updated-at)
-            (setf last-updated-at updated-at))
-    :finally (return last-updated-at)))
+  (find-latest issues "updated_at"))
 
 #+ (or)
 (time
@@ -282,26 +298,29 @@ send to GitLab for authentication"
 
 ;;; Persistent cache
 
-(defun issue-cache-pathname ()
-  (merge-pathnames "issue-cache.sbin"
+(defun cache-pathname (name)
+  (merge-pathnames (format nil "~(~a~)-cache.sbin" name)
                    (ensure-directories-exist
                     (uiop/configuration:xdg-cache-home "local-gitlab/"))))
 
-(defun write-cache ()
-  (simpbin:with-output-to-binary-file (output (issue-cache-pathname)
+(defun issue-cache-pathname ()
+  (cache-pathname :issue))
+
+(defun write-cache-file (name hash-table)
+  (simpbin:with-output-to-binary-file (output (cache-pathname name)
                                               :if-exists :supersede)
     (simpbin:write-header output)
-    (loop :for issue-id
-            :being :the :hash-key :of *issues*
-              :using (hash-value issue)
+    (loop :for id
+            :being :the :hash-key :of hash-table
+              :using (hash-value object)
           :do (simpbin:write-binary-string
-               (jzon:stringify issue :stream nil)
+               (jzon:stringify object :stream nil)
                output))))
 
-(defun read-cache ()
-  (alexandria:if-let ((issue-cache-pathname
-                       (probe-file (issue-cache-pathname))))
-    (simpbin:with-input-from-binary-file (input issue-cache-pathname)
+(defun read-cache-file (name)
+  (alexandria:if-let ((cache-pathname
+                       (probe-file (cache-pathname name))))
+    (simpbin:with-input-from-binary-file (input cache-pathname)
       (simpbin:read-header input)
       (by-id
        (loop
@@ -309,5 +328,17 @@ send to GitLab for authentication"
                               (end-of-file (condition)
                                 (declare (ignore condition))))
          :while json-string
-         :for issue = (jzon:parse json-string)
-         :collect issue)))))
+         :for object = (jzon:parse json-string)
+         :collect object)))))
+
+(defun write-cache ()
+  (write-cache-file :issue *issues*)
+  (write-cache-file :project *projects*))
+
+(defun read-cache ()
+  (log:info "Reading all the issues from the cache...")
+  (setf *issues* (or (read-cache-file :issue)
+                     (by-id '())))
+  (log:info "Reading all the projects from the cache...")
+  (setf *projects* (or (read-cache-file :project)
+                       (by-id '()))))

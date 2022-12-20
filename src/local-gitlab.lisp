@@ -227,11 +227,8 @@
     (finish-output)
     (setf *root-group-id* (read-line)))
   (initialize-gitlab-token)
-  (progn
-    (log:info "Reading all the issues from the cache...")
-    (alexandria:if-let ((issues (read-cache)))
-      (setf *issues* issues))
-    (initialize-issues))
+  (read-cache)
+  (initialize-issues)
   (initialize-projects)
   (log-stats)
   (write-cache)
