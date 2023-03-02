@@ -19,6 +19,11 @@ the state) when we update a component.
 ** TODO Save issues to disk
 ** TODO Show the issues' project
 
+** TODO Once there's a command line, add proper command line completion
+
+- https://web.archive.org/web/20221128005416/https://dev.to/rsteube/a-pragmatic-approach-to-shell-completion-4gp0
+- https://github.com/rsteube/carapace-bin
+
 * Resources:
 
 - [[https://edicl.github.io/hunchentoot/][hunchentoot's manual]]

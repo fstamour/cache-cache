@@ -125,7 +125,17 @@ send to GitLab for authentication"
            :for (body headers) = (http-request-gitlab %uri)
            :collect body)))
 
+(defun by-id (sequence-of-hash-table &optional destination)
+  "Convert a sequence of items to a map of id -> item."
+  (let ((result (or destination (make-hash-table))))
+    (map nil
+         #'(lambda (item &aux (id (gethash "id" item)))
+             (setf (gethash id result) item))
+         sequence-of-hash-table)
+    result))
 
+
+;;; Projects
 
 (defun get-all-projects ()
   (http-request-get-all
@@ -133,6 +143,7 @@ send to GitLab for authentication"
            "~a/groups/~a/projects?per_page=100&simple=true&include_subgroups=true"
            *base-uri*
            *root-group-id*)))
+
 
 ;; I can't find a way to ask gitlab for "new or updated project" using
 ;; their rest api.
@@ -147,32 +158,22 @@ send to GitLab for authentication"
          *root-group-id*
          "2022-11-01T00:00:00.000-05:00"))
 
-
-(defun by-id (sequence-of-hash-table &optional destination)
-  "Convert a sequence of items to a map of id -> item."
-  (let ((result (or destination (make-hash-table))))
-    (map nil
-         #'(lambda (item &aux (id (gethash "id" item)))
-             (setf (gethash id result) item))
-         sequence-of-hash-table)
-    result))
-
-
 (defun initialize-projects ()
   "Get all projects from GitLab's *root-group-id* (recursively), store them by id."
   (log:info "Getting all the projects from GitLab...")
   (setf *projects* (by-id (get-all-projects))))
+
+(defun project-by-id (id)
+  (gethash id *projects*))
+
+
+;;; Issues
 
 (defun remove-moved-issues (issues)
   "Remove issues that were moved"
   (remove-if-not #'(lambda (issue)
                      (eq 'null (gethash "moved_to_id" issue)))
                  issues))
-
-
-;; TODO Maybe make a modifier too (see serapeum)
-(defun issue-by-id (id)
-  (gethash id *issues*))
 
 ;; Listing all the possible issue properties
 #+ (or)
@@ -207,6 +208,16 @@ send to GitLab for authentication"
                              (gethash ,property-key issue)
                            (and present-p (not (eq 'null ,property-name))))))))
 
+
+;; TODO Maybe make a modifier too (see serapeum)
+(defun issue-by-id (id)
+  (gethash id *issues*))
+
+(defun issue-project (issue-id)
+  (project-by-id
+   (issue-project-id
+    (issue-by-id issue-id))))
+
 (defun find-latest (objects field)
   "Given a hash-table of OBJECTS, find the FIELD with the latest time."
   (loop
@@ -239,10 +250,10 @@ send to GitLab for authentication"
 #+ (or)
 (by-id
  (car (http-request-gitlab
-   (format nil
-           "~a/groups/~a/issues?per_page=10"
-           *base-uri*
-           *root-group-id*))))
+       (format nil
+               "~a/groups/~a/issues?per_page=10"
+               *base-uri*
+               *root-group-id*))))
 
 (defun get-new-and-updated-issues ()
   (let ((new-and-updated-issues

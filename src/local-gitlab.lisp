@@ -1,5 +1,12 @@
 (in-package #:local-gitlab)
 
+;; For interactive debugging
+#++
+(progn
+  (setf h:*catch-errors-p* nil)
+  (setf h:*catch-errors-p* t))
+
+
 
 ;;; Web server
 
@@ -127,10 +134,12 @@
            ,@body)
          (finish-output ,stream-var)))))
 
-(defun handler/search (query)
+(defun handler/search (query &optional type)
   (with-streaming-json-array ()
     ;; Add projects
-    (when (str:non-empty-string-p query)
+    (when (and (str:non-empty-string-p query)
+               (or (null type)
+                   (eq type :project)))
       (loop :for project :in (find-projects query)
             :do (write-object*
                  "type" "project"
@@ -138,24 +147,31 @@
                  "text" (item-name-with-namespace project)
                  "url" (format nil "~a/issues" (item-web-url project)))))
     ;; Add issues
-    (loop
-      :for issue :in
-                 (sort
-                  (if (str:non-empty-string-p query)
-                      (find-issues query)
-                      (issues-created-in-the-last-7-days))
-                  #'compare-issues)
-      :do (write-object*
-           "type" "issue"
-           "id" (issue-id issue)
-           "text" (issue-title issue)
-           "url" (issue-web-url issue)
-           "closed" (issue-closed-at-p issue)))))
+    (when (or (null type)
+              (eq type :issue))
+      (loop
+        :for issue :in
+                   (sort
+                    (if (str:non-empty-string-p query)
+                        (find-issues query)
+                        (issues-created-in-the-last-7-days))
+                    #'compare-issues)
+        :do (write-object*
+             "type" "issue"
+             "id" (issue-id issue)
+             "text" (issue-title issue)
+             "url" (issue-web-url issue)
+             "closed" (issue-closed-at-p issue))))))
 
 (h:define-easy-handler (search-gitlab :uri "/search")
-    ((query :parameter-type 'string :request-type :get :real-name "q"))
+    ((query :parameter-type 'string :request-type :get :real-name "q")
+     (type :parameter-type 'string :request-type :get :real-name "type"))
   (setf (hunchentoot:content-type*) "text/javascript")
-  (handler/search query))
+  (handler/search
+   query
+   (when (and type
+              (member type '("project" "issue") :test #'string-equal))
+     (intern (string-upcase type) #.(find-package :keyword)))))
 
 ;; Testing find-issues
 #+ (or)
@@ -175,7 +191,9 @@
      #'(lambda (id issue)
          (write-object*
           "id" id
-          "text" (issue-title issue)))
+          "text" (issue-title issue)
+          "project" (item-name-with-namespace
+                     (issue-project id))))
      *issues*)))
 
 (h:define-easy-handler (projects :uri "/projects") ()
@@ -186,6 +204,15 @@
          (declare (ignore id))
          (write-value* project))
      *projects*)))
+
+(h:define-easy-handler (get-item :uri "/item")
+    ((id-string :parameter-type 'string :request-type :get :real-name "id"))
+  "Describe 1 item"
+  (let ((id (parse-integer id-string)))
+    (jzon:stringify
+     (or
+      (issue-by-id id)
+      (project-by-id id)))))
 
 
 ;;; Initialization

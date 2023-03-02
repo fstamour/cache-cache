@@ -1,8 +1,22 @@
 
-guix-shell := guix shell -f guix.scm --rebuild-cache
+guix := guix environment -L guix-modules --ad-hoc local-gitlab
+# guix-shell := guix shell -L guix-modules -f guix.scm -e 'local-gitlab' --rebuild-cache
+
+run-dev:
+	# Assuming everything is loaded by direnv
+	@# See .envrc and guix.scm
+	sbcl \
+		--eval '(asdf:load-asd (truename "local-gitlab.asd"))' \
+		--eval "(mapc #'asdf:load-system '(#:local-gitlab #:swank))" \
+		--eval "(swank:create-server :dont-close t)" \
+		--eval "(local-gitlab:main)"
 
 run:
-	${guix-shell} -- local-gitlab
+	${guix} -- local-gitlab
 
+# Start a new shell with the binary "local-gitlab" available
 shell:
-	${guix-shell}
+	${guix}
+
+
+.PHONY: run-dev run shell
