@@ -39,7 +39,8 @@
   ((:file "package")
    (:file "variables")
    (:file "gitlab-client")
-   (:file "local-gitlab")))
+   (:file "local-gitlab")
+   (:file "cli")))
 
 (asdf:defsystem #:local-gitlab/config
   :description "System to configure the \"local-gitlab\" system."

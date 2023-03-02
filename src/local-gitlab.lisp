@@ -10,10 +10,21 @@
 
 ;;; Web server
 
-(defun start-server ()
+(defun start-server (&key
+                       interface
+                       port
+                     &aux
+                       (interface (or interface "127.0.0.1"))
+                       (port (or port (find-port:find-port :interface interface))))
   "Start the web server."
   ;; TODO we should find-port here...
   (log:info "Starting web server...")
+  (unless *server*
+    (setf *server*
+          (make-instance
+           'h:easy-acceptor
+           :address interface
+           :port port)))
   (h:start *server*)
   (log:info "Web server started."))
 
@@ -244,10 +255,7 @@
     (let ((*package* (find-package 'local-gitlab.config)))
       (load config-file))))
 
-;; TODO Add command line interface
-;; https://docs.stevelosh.com/adopt/usage/
-
-(defun main ()
+(defun serve (&key join-thread-p port interface)
   (read-config)
   (unless *root-group-id*
     (format t "~&Please enter the root-group-id: ")
@@ -259,17 +267,11 @@
   (initialize-projects)
   (log-stats)
   (write-cache)
-  (start-server)
+  (start-server :port port :interface interface)
   (start-cron)
-  (log:info "Server started on \"http://localhost:~a\"." (server-port)))
-
-(defun main-cli (args)
-  (main)
-  (bt:join-thread (server-thread)))
-
-(defparameter uiop/image:*image-entry-point*
-  #'(lambda ()
-      (main-cli (uiop/image:raw-command-line-arguments))))
+  (log:info "Server started on \"http://localhost:~a\"." (server-port))
+  (when join-thread-p
+    (bt:join-thread (server-thread))))
 
 (defun quit ()
   (log:info "Stopping cron...")
