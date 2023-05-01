@@ -18,7 +18,7 @@
                        (port (or port (find-port:find-port :interface interface))))
   "Start the web server."
   ;; TODO we should find-port here...
-  (log:info "Starting web server...")
+  (log:info "Starting web server on ~a:~a..." interface port)
   (unless *server*
     (setf *server*
           (make-instance
@@ -97,7 +97,7 @@
   `(jzon:with-writer* (:stream ,stream)
      (jzon:with-array* ,@body)))
 
-#+ (or)
+#++
 (with-output-to-string (output)
   (with-json-array (output)
     (write-value* "some text")
@@ -136,14 +136,16 @@
                     last-week))
                (a:hash-table-values *issues*))))
 
+
 (defmacro with-streaming-json-array (() &body body)
   (a:with-gensyms (stream-var)
-    `(progn
-       (setf (hunchentoot:content-type*) "text/javascript")
-       (let ((,stream-var (h:send-headers)))
-         (with-json-array (,stream-var)
-           ,@body)
-         (finish-output ,stream-var)))))
+    `(let ((,stream-var (or (when (boundp 'h:*reply*)
+                              (setf (hunchentoot:content-type*) "text/javascript")
+                              (h:send-headers))
+                            *standard-output*)))
+       (with-json-array (,stream-var)
+         ,@body)
+       (finish-output ,stream-var))))
 
 (defun handler/search (query &optional type)
   (with-streaming-json-array ()
@@ -271,6 +273,7 @@
   (start-cron)
   (log:info "Server started on \"http://localhost:~a\"." (server-port))
   (when join-thread-p
+    ;; TODO with-user-abort
     (bt:join-thread (server-thread))))
 
 (defun quit ()
