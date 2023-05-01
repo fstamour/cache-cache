@@ -8,8 +8,8 @@ run-dev:
 	sbcl \
 		--eval '(asdf:load-asd (truename "local-gitlab.asd"))' \
 		--eval "(mapc #'asdf:load-system '(#:local-gitlab #:swank))" \
-		--eval "(swank:create-server :dont-close t)" \
-		--eval "(local-gitlab:main)"
+		--eval "(swank:create-server :port (find-port:find-port :min 4005) :dont-close t)" \
+		--eval "(local-gitlab:serve)"
 
 run:
 	${guix} -- local-gitlab
