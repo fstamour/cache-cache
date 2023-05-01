@@ -353,3 +353,15 @@ send to GitLab for authentication"
   (log:info "Reading all the projects from the cache...")
   (setf *projects* (or (read-cache-file :project)
                        (by-id '()))))
+
+
+
+;; (time (read-cache-file :issue))
+#++
+(time (prog1 nil
+        (jzon:parse
+         (length (jzon:stringify *issues*))
+         14 462 450
+         :key-fn #'alexandria:make-keyword)))
+;; 14 secs before updating jzon
+;; 0.5 secs after

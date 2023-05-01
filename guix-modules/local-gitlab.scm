@@ -13,17 +13,27 @@
              (guix build-system trivial))
 
 (define-public sbcl-jzon-newer
-  (let ((commit "ba43faa1f2a07e83226d0e52b29cf6a816e3596d"))
+  (let ((commit
+         ;; "ba43faa1f2a07e83226d0e52b29cf6a816e3596d"
+         "360b1e7165bcf12abb070f874af4bcd7f281c963"
+         ))
     (package
      (inherit sbcl-jzon)
      (version (git-version "1.0.0" "0" commit))
+     (inputs (list sbcl-float-features
+                   sbcl-closer-mop
+                   sbcl-flexi-streams
+                   sbcl-trivial-gray-streams))
      (source (origin
               (method git-fetch)
               (uri (git-reference
                     (url "https://github.com/Zulu-Inuoe/jzon")
                     (commit commit)))
               (file-name (git-file-name (package-name sbcl-jzon) version))
-              (sha256 (base32 "0msqjjbaxah5hwm8crap2wgmkfgzszrq213djphwr0kggm4ass1i")))))))
+              (sha256 (base32
+                       ;; "0msqjjbaxah5hwm8crap2wgmkfgzszrq213djphwr0kggm4ass1i"
+                       "082wjm2h7mwc8w8fxasjsplk2fcxgn4pg0mhbv8xlf6hw862x5bq"
+                       )))))))
 
 (define-public sbcl-simpbin
   (let ((commit "6f9f1c196ca8f363b478bab0a8623f53b89e5586")
@@ -65,6 +75,9 @@
      (synopsis "A Damn OPTion parsing library.")
      (description "Adopt is a simple UNIX-style option parser in Common Lisp, heavily influenced by Python's optparse and argparse.")
      (license license:expat)))) ; MIT license
+
+;; TODO add
+;; https://github.com/compufox/with-user-abort
 
 (define-public sbcl-local-gitlab
   (package
