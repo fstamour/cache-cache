@@ -32,7 +32,10 @@
    ;; To execute function at regular intervals
    #:cl-cron
    ;; For command line argument parsing
-   #:adopt)
+   #:adopt
+   ;; To handle C-c
+   ;; TODO #:with-user-abort
+   )
   :pathname "src"
   :serial t
   :components

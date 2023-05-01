@@ -2,7 +2,6 @@
 * Tasks
 ** TODO Add a readme
 ** TODO [#A] Add a test system
-** TODO [#B] Don't use serapeum for vujs templates
 ** TODO Update projects periodically
 ** TODO Get all epics
 ** TODO Get all labels
@@ -18,6 +17,7 @@ the state) when we update a component.
 ** TODO Use dexador instead of drakma
 ** TODO Save issues to disk
 ** TODO Show the issues' project
+** TODO show swank or slynk's port in the web interface
 
 ** TODO Once there's a command line, add proper command line completion
 

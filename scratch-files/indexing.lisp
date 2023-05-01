@@ -35,18 +35,27 @@
    :test #'string=))
 
 
+#++
 (normalized-ngrams 3 "abcdefgAbcd")
 
-(defparameter *index*
+(defun build-index (&optional (issues *issues*))
   (let ((index (make-hash-table :test #'equal)))
-    (maphash
-     #'(lambda (id issue)
-         (loop :for ngram :in (normalized-ngrams
-                               3
-                               (issue-title issue))
-               :do (pushnew id (gethash ngram index))))
-     *issues*)
+    (when issues
+      (maphash
+       #'(lambda (id issue)
+           (loop :for ngram :in (normalized-ngrams
+                                 3
+                                 (issue-title issue))
+                 :do (pushnew id (gethash ngram index))))
+       issues))
     index))
+
+(defparameter *index* (build-index))
+
+#++
+(progn
+  (time (length
+         (jzon:stringify *index*))))
 
 (defun narrow-down-using-index (index query &optional candidates)
   (loop
@@ -64,6 +73,7 @@
     :while candidates
     :finally (return candidates)))
 
+#++
 (length
  (narrow-down-using-index *index* "gitlab"))
 
