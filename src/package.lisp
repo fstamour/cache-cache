@@ -1,4 +1,9 @@
 
+#+sbcl
+(progn
+  (sb-ext:restrict-compiler-policy 'debug 3 3)
+  (sb-ext:restrict-compiler-policy 'safety 3 3))
+
 (defpackage #:local-gitlab
   (:documentation "Package to interact with GitLab")
   (:use #:cl #:local-gitlab.config)

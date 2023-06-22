@@ -122,6 +122,8 @@
                                        (mkdir-p bin)
                                        (chdir bin)
                                        (system* #$(file-append sbcl "/bin/sbcl")
-                                                "--load"
-                                                #$local-gitlab-build-script))))))
+                                                "--no-userinit"
+                                                "--disable-debugger"
+                                                "--eval" "(require 'asdf)"
+                                                "--load" #$local-gitlab-build-script))))))
    (inputs (list sbcl-local-gitlab))))
