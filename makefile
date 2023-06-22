@@ -23,7 +23,7 @@ shell:
 
 .PHONY: build
 build:
-	guix build -L guix-modules local-gitlab
+	guix build -L guix-modules --root=./guix-results local-gitlab
 
 .PHONY: install
 install:
