@@ -17,7 +17,6 @@
                        (interface (or interface "127.0.0.1"))
                        (port (or port (find-port:find-port :interface interface))))
   "Start the web server."
-  ;; TODO we should find-port here...
   (log:info "Starting web server on ~a:~a..." interface port)
   (unless *server*
     (setf *server*
