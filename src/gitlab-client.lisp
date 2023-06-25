@@ -6,7 +6,8 @@
   (log:info "Initializing GitLab token...")
   (let ((token
           (cons :private
-                (uiop:getenv "GITLAB_PRIVATE_TOKEN"))))
+                (or (uiop:getenv "GITLAB_PRIVATE_TOKEN")
+                    (error "Environment variable GITLAB_PRIVATE_TOKEN is not set or empty.")))))
     ;; TODO validate token (at least check it's not nil)
     (setf *token* token))
   (if *token*
@@ -111,9 +112,13 @@ send to GitLab for authentication"
     (declare (ignorable status-code reason-phrase headers))
     (log:debug "Making a request to GitLab: \"~a\"..." uri)
     (setf *last-headers* headers)
-    (list
-     (jzon:parse body)
-     headers)))
+    (let ((response (jzon:parse body)))
+      (when (and (hash-table-p response)
+                 (gethash "message" response))
+        ;; TODO better error message
+        ;; TODO add a restart
+        (error "http-request REST error: message = ~a" (gethash "message" response)))
+      (list response headers))))
 
 (defun http-request-get-all (uri)
   "Calls uri and all the \"next\" links, returns a vector of all the results concatenated."
@@ -256,17 +261,19 @@ send to GitLab for authentication"
                *root-group-id*))))
 
 (defun get-new-and-updated-issues ()
-  (let ((new-and-updated-issues
-          (http-request-get-all
-           (format nil
-                   "~a/groups/~a/issues?per_page=100&updated_after=~a"
-                   *base-uri*
-                   *root-group-id*
-                   (lt:format-rfc3339-timestring
-                    nil
-                    (lt:adjust-timestamp
-                     (find-last-update-time *issues*)
-                     (offset :sec 1)))))))
+  (let* ((latest-time (find-last-update-time *issues*))
+         (new-and-updated-issues
+           (if latest-time
+               (http-request-get-all
+                (format
+                 nil
+                 "~a/groups/~a/issues?per_page=100&updated_after=~a"
+                 *base-uri*
+                 *root-group-id*
+                 (lt:format-rfc3339-timestring
+                  nil
+                  (lt:adjust-timestamp latest-time (offset :sec 1)))))
+               (get-all-issues))))
     (log4cl:log-info (length new-and-updated-issues))
     new-and-updated-issues))
 
