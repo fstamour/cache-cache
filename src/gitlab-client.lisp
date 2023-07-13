@@ -99,26 +99,39 @@ send to GitLab for authentication"
 ;;; - use some kind of queues (maybe chanl?)
 ;;; - look at headers Rate-Limit-Remaining and RetryAfter
 (defun http-request-gitlab (uri &rest rest)
-  (multiple-value-bind
-        (body status-code headers uri-object stream must-close reason-phrase)
-      ;; TODO use dexador instead
-      (apply #'drakma:http-request
-             uri
-             ;; TODO Parse "rest" to extract ":additional-headers"
-             ;; Send the auth
-             :additional-headers (list (token-header))
-             rest)
-    (declare (ignore stream must-close uri-object))
-    (declare (ignorable status-code reason-phrase headers))
-    (log:debug "Making a request to GitLab: \"~a\"..." uri)
-    (setf *last-headers* headers)
-    (let ((response (jzon:parse body)))
-      (when (and (hash-table-p response)
-                 (gethash "message" response))
-        ;; TODO better error message
-        ;; TODO add a restart
-        (error "http-request REST error: message = ~a" (gethash "message" response)))
-      (list response headers))))
+  (log:debug "Making a request to GitLab: \"~a\"..." uri)
+   ;; TODO Move that handler-case somewhere else, e.g. in the labmda
+   ;; ran by cl-cron.
+  (handler-case
+      (multiple-value-bind
+            (body status-code headers uri-object stream must-close reason-phrase)
+          ;; TODO use dexador instead
+          (apply #'drakma:http-request
+                 uri
+                 ;; TODO Parse "rest" to extract ":additional-headers"
+                 ;; Send the auth
+                 :additional-headers (list (token-header))
+                 (alexandria:remove-from-plist rest :additional-headers))
+        (declare (ignore stream must-close uri-object))
+        (declare (ignorable headers))
+        ;; status-code reason-phrase
+        (log:debug "~A ~A" status-code reason-phrase)
+        ;; (if )
+        (setf *last-headers* headers)
+        (let ((response (jzon:parse body)))
+          (when (and (hash-table-p response)
+                     (gethash "message" response))
+            ;; TODO better error message
+            ;; TODO add a restart
+            (error "http-request REST error: message = ~a" (gethash "message" response)))
+          (list response headers)))
+    (error (condition)
+      (log:error "~a" condition
+                 #++
+                 (format nil
+                         (simple-condition-format-control condition)
+                         (simple-condition-format-arguments condition)))
+      nil)))
 
 (defun http-request-get-all (uri)
   "Calls uri and all the \"next\" links, returns a vector of all the results concatenated."
@@ -127,8 +140,19 @@ send to GitLab for authentication"
            :for %uri = uri
              :then (extract-next-uri headers)
            :while %uri
-           :for (body headers) = (http-request-gitlab %uri)
+           :for response = (http-request-gitlab %uri)
+           :while response
+           :for (body headers) = response
            :collect body)))
+
+(defun by (sequence-of-hash-table &key (key #'item-id) destination)
+  "Convert a sequence of items to a map of key -> item."
+  (let ((result (or destination (make-hash-table :test 'equal))))
+    (map nil
+         #'(lambda (item &aux (key (funcall key item)))
+             (setf (gethash key result) item))
+         sequence-of-hash-table)
+    result))
 
 (defun by-id (sequence-of-hash-table &optional destination)
   "Convert a sequence of items to a map of id -> item."
@@ -149,11 +173,12 @@ send to GitLab for authentication"
            *base-uri*
            *root-group-id*)))
 
-
 ;; I can't find a way to ask gitlab for "new or updated project" using
 ;; their rest api.
 ;; Perhaps I could order_by=created_at to find the new projects
 ;; and order_by=updated_at to find the updated_projects?
+;; UPDATE: See updated_after in:
+;; https://docs.gitlab.com/ee/api/projects.html#list-all-projects
 
 #+ (or)
 (http-request-gitlab
@@ -169,6 +194,7 @@ send to GitLab for authentication"
   (setf *projects* (by-id (get-all-projects))))
 
 (defun project-by-id (id)
+  "Get a project by Id (from the in-memory cache)."
   (gethash id *projects*))
 
 

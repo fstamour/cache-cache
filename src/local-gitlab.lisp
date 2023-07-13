@@ -33,9 +33,10 @@
 
 (defun server-thread ()
   "Get the server's main thread."
-  (slot-value
-   (slot-value *server* 'h::taskmaster)
-   'h::acceptor-process))
+  (when *server*
+    (slot-value
+     (slot-value *server* 'h::taskmaster)
+     'h::acceptor-process)))
 
 
 
@@ -93,6 +94,10 @@
 
 (defmacro with-json-array ((stream) &body body)
   "Macro to help print a big array as json into a stream."
+  `(let ((jzon:*writer* (jzon:make-writer :stream ,stream)))
+     (jzon:with-array* ,@body))
+  ;; we don't use jzon:with-writer* because it closes the stream
+  #++
   `(jzon:with-writer* (:stream ,stream)
      (jzon:with-array* ,@body)))
 
@@ -143,8 +148,7 @@
                               (h:send-headers))
                             *standard-output*)))
        (with-json-array (,stream-var)
-         ,@body)
-       (finish-output ,stream-var))))
+         ,@body))))
 
 (defun handler/search (query &optional type)
   (with-streaming-json-array ()
