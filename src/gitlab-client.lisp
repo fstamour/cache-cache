@@ -100,8 +100,8 @@ send to GitLab for authentication"
 ;;; - look at headers Rate-Limit-Remaining and RetryAfter
 (defun http-request-gitlab (uri &rest rest)
   (log:debug "Making a request to GitLab: \"~a\"..." uri)
-   ;; TODO Move that handler-case somewhere else, e.g. in the labmda
-   ;; ran by cl-cron.
+  ;; TODO Move that handler-case somewhere else, e.g. in the labmda
+  ;; ran by cl-cron.
   (handler-case
       (multiple-value-bind
             (body status-code headers uri-object stream must-close reason-phrase)
@@ -126,11 +126,7 @@ send to GitLab for authentication"
             (error "http-request REST error: message = ~a" (gethash "message" response)))
           (list response headers)))
     (error (condition)
-      (log:error "~a" condition
-                 #++
-                 (format nil
-                         (simple-condition-format-control condition)
-                         (simple-condition-format-arguments condition)))
+      (log:error "~a" condition)
       nil)))
 
 (defun http-request-get-all (uri)
