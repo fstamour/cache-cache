@@ -42,6 +42,7 @@
   :components
   ((:file "package")
    (:file "variables")
+   (:file "utilities")
    (:file "gitlab-client")
    (:file "local-gitlab")
    (:file "cli")))
