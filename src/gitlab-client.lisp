@@ -152,12 +152,7 @@ send to GitLab for authentication"
 
 (defun by-id (sequence-of-hash-table &optional destination)
   "Convert a sequence of items to a map of id -> item."
-  (let ((result (or destination (make-hash-table))))
-    (map nil
-         #'(lambda (item &aux (id (gethash "id" item)))
-             (setf (gethash id result) item))
-         sequence-of-hash-table)
-    result))
+  (by sequence-of-hash-table :destination destination))
 
 
 ;;; Projects
