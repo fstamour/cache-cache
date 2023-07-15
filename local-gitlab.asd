@@ -34,8 +34,9 @@
    ;; For command line argument parsing
    #:adopt
    ;; To handle C-c
-   ;; TODO #:with-user-abort
-   )
+   #:with-user-abort
+   ;; Way too many utilities
+   #:serapeum)
   :pathname "src"
   :serial t
   :components

@@ -38,25 +38,29 @@
 
 (define-public sbcl-local-gitlab
   (package
-    (name "sbcl-local-gitlab")
-    (version "0.0.1")
-    (source (local-file "../" "local-gitlab" #:recursive? #t))
-    (build-system asdf-build-system/sbcl)
-    (inputs (list sbcl-adopt
-                  sbcl-drakma
-                  sbcl-log4cl
-                  sbcl-hunchentoot
-                  sbcl-find-port
-                  sbcl-kebab
-                  sbcl-cl-str
-                  sbcl-local-time
-                  sbcl-cl-cron
-                  sbcl-jzon
-                  sbcl-simpbin))
-    (home-page "https://github.com/fstamour/local-gitlab")
-    (synopsis "")
-    (description "Caching gitlab issues and more locally, for bazingly fast search")
-    (license license:expat)))
+   (name "sbcl-local-gitlab")
+   (version "0.0.1")
+   (source (local-file "../" "local-gitlab" #:recursive? #t))
+   (build-system asdf-build-system/sbcl)
+   (inputs (list sbcl-adopt
+                 sbcl-drakma
+                 sbcl-log4cl
+                 sbcl-hunchentoot
+                 sbcl-find-port
+                 sbcl-kebab
+                 sbcl-cl-str
+                 sbcl-local-time
+                 sbcl-cl-cron
+                 sbcl-jzon
+                 sbcl-simpbin
+                 sbcl-serapeum
+                 sbcl-with-user-abort
+                 ;; I don't use chanl _yet_, but I think I plan to :P
+                 sbcl-chanl))
+   (home-page "https://github.com/fstamour/local-gitlab")
+   (synopsis "")
+   (description "Caching gitlab issues and more locally, for bazingly fast search")
+   (license license:expat)))
 
 (define-public local-gitlab
   (package
