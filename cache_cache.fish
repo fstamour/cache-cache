@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 #
-# Uses local-gitlab's server, curl, jq and fzf to quickly find issues and project
+# Uses cache-cache's server, curl, jq and fzf to quickly find issues and project
 #
 
 set self (status --current-filename)

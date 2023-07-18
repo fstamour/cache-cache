@@ -1,4 +1,4 @@
-(in-package #:local-gitlab)
+(in-package #:cache-cache)
 
 
 (defun initialize-gitlab-token ()
@@ -346,7 +346,7 @@ send to GitLab for authentication"
 (defun cache-pathname (name)
   (merge-pathnames (format nil "~(~a~)-cache.sbin" name)
                    (ensure-directories-exist
-                    (uiop/configuration:xdg-cache-home "local-gitlab/"))))
+                    (uiop/configuration:xdg-cache-home "cache-cache/"))))
 
 (defun issue-cache-pathname ()
   (cache-pathname :issue))

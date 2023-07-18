@@ -1,4 +1,4 @@
-(in-package #:local-gitlab)
+(in-package #:cache-cache)
 
 (defvar *root*
   (or
@@ -6,7 +6,7 @@
    (probe-file (merge-pathnames "assets/"))
    ;; Pretty sure this doesn't works well once compiled...
    (merge-pathnames "assets/"
-                    (asdf:system-source-directory :local-gitlab))))
+                    (asdf:system-source-directory :cache-cache))))
 
 (defvar *token* nil
   "The token used to authenticate with GitLab.")

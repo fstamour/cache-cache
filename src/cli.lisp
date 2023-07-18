@@ -1,6 +1,6 @@
-(in-package #:local-gitlab)
+(in-package #:cache-cache)
 
-(defparameter *program-name* "local-gitlab")
+(defparameter *program-name* "cache-cache")
 
 (defun ensure-unique (name &optional parameterp)
   (if parameterp
@@ -59,7 +59,7 @@
                 serve
                 serve-group
                 list-issues)
-     :examples `(("Start a web server" . "local-gitlab --serve")))))
+     :examples `(("Start a web server" . "cache-cache --serve")))))
 
 
 

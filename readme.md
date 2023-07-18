@@ -1,4 +1,4 @@
-# local-gitlab
+# cache-cache
 
 > caching gitlab issues and more locally, for bazingly fast search
 
@@ -13,4 +13,3 @@ P.S. You might wonder why it's hosted on GitHub and not GitLab... I might add ot
 # Related projects
 
 - [magit's forge](https://github.com/magit/forge)
-

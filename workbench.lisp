@@ -1,4 +1,4 @@
-(in-package #:local-gitlab)
+(in-package #:cache-cache)
 
 (initialize-projects)
 (initialize-issues)
@@ -173,7 +173,7 @@ resource \"gitlab_group_label\" ~s {
   "docs.lisp"
   (asdf:system-source-directory 'serapeum)))
 
-(let ((root (asdf:system-source-directory 'local-gitlab))
+(let ((root (asdf:system-source-directory 'cache-cache))
       (home (user-homedir-pathname)))
   (if (uiop:absolute-pathname-p (enough-namestring root home))
       (error "The system's location ~s is not in the user's home directory (~s), did you load the system from guix or nix?"
@@ -182,7 +182,7 @@ resource \"gitlab_group_label\" ~s {
       (serapeum.docs:update-function-reference
        ;; (namestring (uiop:merge-pathnames* root "REFERENCE.md"))
        "REFERENCE.md"
-       :local-gitlab)))
+       :cache-cache)))
 
 ;; It failed miserably because swank wasn't able to locate the source
 ;; of a few symbols. I tried to modify serapeum/docs' code, but too

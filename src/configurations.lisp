@@ -1,10 +1,10 @@
-(defpackage #:local-gitlab.config
+(defpackage #:cache-cache.config
   (:documentation "")
   (:use #:cl)
   (:export #:*base-uri*
            #:*root-group-id*))
 
-(in-package #:local-gitlab.config)
+(in-package #:cache-cache.config)
 
 (defvar *base-uri* "https://gitlab.com/api/v4"
   "The base uri to GitLab's API.")

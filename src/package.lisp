@@ -4,9 +4,9 @@
   (sb-ext:restrict-compiler-policy 'debug 3 3)
   (sb-ext:restrict-compiler-policy 'safety 3 3))
 
-(defpackage #:local-gitlab
+(defpackage #:cache-cache
   (:documentation "Package to interact with GitLab")
-  (:use #:cl #:local-gitlab.config)
+  (:use #:cl #:cache-cache.config)
   (:local-nicknames (#:h #:hunchentoot)
                     (#:a #:alexandria)
                     (#:lt #:local-time)

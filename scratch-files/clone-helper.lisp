@@ -3,7 +3,7 @@ I have to clone a bunch of projects, going through GitLab's UI to get
 each git repo's URL is annoying.
 |#
 
-(in-package #:local-gitlab)
+(in-package #:cache-cache)
 
 ;; How do I want to name the directory for each repo?
 (defun directory-names-from-git-repo-url (url)

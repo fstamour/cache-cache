@@ -1,4 +1,4 @@
-(in-package #:local-gitlab)
+(in-package #:cache-cache)
 
 ;; For interactive debugging
 #++
@@ -278,9 +278,9 @@
             (hash-table-count *projects*)))
 
 (defun read-config ()
-  (let ((config-file (uiop/configuration:xdg-config-home "local-gitlab" "config.lisp")))
+  (let ((config-file (uiop/configuration:xdg-config-home "cache-cache" "config.lisp")))
     (when (probe-file config-file))
-    (let ((*package* (find-package 'local-gitlab.config)))
+    (let ((*package* (find-package 'cache-cache.config)))
       (load config-file))))
 
 (defun serve (&key join-thread-p port interface)

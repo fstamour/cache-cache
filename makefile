@@ -1,6 +1,6 @@
 
-guix := guix environment -L guix-modules --ad-hoc local-gitlab
-# guix-shell := guix shell -L guix-modules -f guix.scm -e 'local-gitlab' --rebuild-cache
+guix := guix environment -L guix-modules --ad-hoc cache-cache
+# guix-shell := guix shell -L guix-modules -f guix.scm -e 'cache-cache' --rebuild-cache
 
 .PHONY: run-dev
 run-dev:
@@ -9,10 +9,10 @@ run-dev:
 	sbcl \
 		--no-userinit \
 		--eval "(require 'asdf)" \
-		--eval '(asdf:load-asd (truename "local-gitlab.asd"))' \
-		--eval "(mapc #'asdf:load-system '(#:local-gitlab #:swank))" \
+		--eval '(asdf:load-asd (truename "cache-cache.asd"))' \
+		--eval "(mapc #'asdf:load-system '(#:cache-cache #:swank))" \
 		--eval "(swank:create-server :port (find-port:find-port :min 4005) :dont-close t)" \
-		--eval "(local-gitlab:serve)"
+		--eval "(cache-cache:serve)"
 
 
 .PHONY: help
@@ -30,19 +30,19 @@ help:
 
 .PHONY: run
 run:
-	${guix} -- local-gitlab
+	${guix} -- cache-cache
 
 .PHONY: shell
-# Start a new shell with the binary "local-gitlab" available
+# Start a new shell with the binary "cache-cache" available
 shell:
 	${guix}
 
 .PHONY: build
 build:
 	rm -f ./guix-results
-	guix build -L guix-modules --root=./guix-results.tmp local-gitlab
+	guix build -L guix-modules --root=./guix-results.tmp cache-cache
 	mv ./guix-results.tmp ./guix-results
 
 .PHONY: install
 install:
-	guix install -L guix-modules local-gitlab
+	guix install -L guix-modules cache-cache

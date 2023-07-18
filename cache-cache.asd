@@ -1,18 +1,18 @@
 (cl:in-package #:cl)
 
-(defpackage #:local-gitlab.asd
+(defpackage #:cache-cache.asd
   (:use :cl :asdf))
 
-(in-package #:local-gitlab.asd)
+(in-package #:cache-cache.asd)
 
-(asdf:defsystem #:local-gitlab
+(asdf:defsystem #:cache-cache
   :description "A tool to work with a local cache of part of GitLab."
   ;; TODO Long description: because it's faster (actually #.(read-whole-file "readme.org")
   :version "0.0.1"
   :author "Francis St-Amour"
   :licence "Public domain"
   :depends-on
-  (#:local-gitlab/config
+  (#:cache-cache/config
    ;; For making HTTP requests
    #:drakma
    ;; For JSON
@@ -44,11 +44,11 @@
    (:file "variables")
    (:file "utilities")
    (:file "gitlab-client")
-   (:file "local-gitlab")
+   (:file "cache-cache")
    (:file "cli")))
 
-(asdf:defsystem #:local-gitlab/config
-  :description "System to configure the \"local-gitlab\" system."
+(asdf:defsystem #:cache-cache/config
+  :description "System to configure the \"cache-cache\" system."
   :version "0.0.1"
   :author "Francis St-Amour"
   :licence "Public domain"

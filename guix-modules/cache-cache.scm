@@ -1,4 +1,4 @@
-(define-module (local-gitlab))
+(define-module (cache-cache))
 
 (use-modules ((guix licenses) #:prefix license:)
              (gnu packages)
@@ -36,11 +36,11 @@
 ;; TODO add
 ;; https://github.com/compufox/with-user-abort
 
-(define-public sbcl-local-gitlab
+(define-public sbcl-cache-cache
   (package
-   (name "sbcl-local-gitlab")
+   (name "sbcl-cache-cache")
    (version "0.0.1")
-   (source (local-file "../" "local-gitlab" #:recursive? #t))
+   (source (local-file "../" "cache-cache" #:recursive? #t))
    (build-system asdf-build-system/sbcl)
    (inputs (list sbcl-adopt
                  sbcl-drakma
@@ -57,34 +57,34 @@
                  sbcl-with-user-abort
                  ;; I don't use chanl _yet_, but I think I plan to :P
                  sbcl-chanl))
-   (home-page "https://github.com/fstamour/local-gitlab")
+   (home-page "https://github.com/fstamour/cache-cache")
    (synopsis "")
    (description "Caching gitlab issues and more locally, for bazingly fast search")
    (license license:expat)))
 
-(define-public local-gitlab
+(define-public cache-cache
   (package
-    (inherit sbcl-local-gitlab)
-    (name "local-gitlab")
-    (source #f)
-    (build-system trivial-build-system)
-    (arguments
-     (list #:builder
-           (let ((local-gitlab-build-script
-                  (scheme-file "build-local-gitlab.lisp"
-                               #~((require :asdf)
-                                  (asdf:load-system '#:local-gitlab)
-                                  (uiop/image:dump-image "local-gitlab" :executable t))
-                               #:splice? #t)))
-             (with-imported-modules '((guix build utils))
-               #~(let ((bin (string-append #$output "/bin")))
-                   (use-modules (guix build utils))
-                   (setenv "XDG_CONFIG_DIRS" #$(file-append (this-package-input "sbcl-local-gitlab") "/etc"))
-                   (mkdir-p bin)
-                   (chdir bin)
-                   (system* #$(file-append sbcl "/bin/sbcl")
-                            "--no-userinit"
-                            "--disable-debugger"
-                            "--eval" "(require 'asdf)"
-                            "--load" #$local-gitlab-build-script))))))
-    (inputs (list sbcl-local-gitlab))))
+   (inherit sbcl-cache-cache)
+   (name "cache-cache")
+   (source #f)
+   (build-system trivial-build-system)
+   (arguments
+    (list #:builder
+          (let ((cache-cache-build-script
+                 (scheme-file "build-cache-cache.lisp"
+                              #~((require :asdf)
+                                 (asdf:load-system '#:cache-cache)
+                                 (uiop/image:dump-image "cache-cache" :executable t))
+                              #:splice? #t)))
+            (with-imported-modules '((guix build utils))
+                                   #~(let ((bin (string-append #$output "/bin")))
+                                       (use-modules (guix build utils))
+                                       (setenv "XDG_CONFIG_DIRS" #$(file-append (this-package-input "sbcl-cache-cache") "/etc"))
+                                       (mkdir-p bin)
+                                       (chdir bin)
+                                       (system* #$(file-append sbcl "/bin/sbcl")
+                                                "--no-userinit"
+                                                "--disable-debugger"
+                                                "--eval" "(require 'asdf)"
+                                                "--load" #$cache-cache-build-script))))))
+   (inputs (list sbcl-cache-cache))))

@@ -9,7 +9,7 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        name = "local-gitlab";
+        name = "cache-cache";
 
         pkgs = nixpkgs.legacyPackages.${system};
 
