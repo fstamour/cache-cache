@@ -42,3 +42,59 @@ https://github.com/vindarel/fuzzy-match
 
 - [[https://parenscript.common-lisp.dev/][homepage]]
 - [[https://parenscript.common-lisp.dev/][manual]]
+
+* Handling multiple sources of data
+> The ultimate yak-shaving
+
+** Motivation
+
+"Even more yak-shaving"
+
+I've been using this project for a long while to help me find issues
+and projects in GitLab very quickly. But I want more.
+
+- First of all, I want to add "epics", but I don't want to duplicate
+even more code as it is.
+- I would like to add GitHub too
+- I would like to search the contents, not just the title
+- I want actual indexes (see [[file:scratch-files/indexing.lisp][prototype]])
+- I want to index local files (e.g. find and grep -R)
+- I want to index local repositories (I should try hound-search
+  before, I haven't used it since 2017...)
+- I want to support multiple GitLab instances (I currently have at
+  least 3)
+- I want to (optionally) include personal projects.
+- I want to search quicklisp and/or specific references, like clhs,
+  Alexandria, serapeum, uiop, asdf, etc...
+  - https://github.com/Zulu-Inuoe/jzon/
+  - https://github.com/ruricolist/serapeum/blob/master/REFERENCE.md
+- I want to search guix...
+  - other package managers: pypi, nix, npm, Debian's, Ubuntu's,
+    docker.io...
+
+** Plan
+
+- I'll use CLOS
+- I want to take advantage of serapeum for once
+- I need to figure out which generic method I need
+- I need to figure out the nomenclature, but "source" is a good
+  start... I could look at how magit-forge, elasticsearch, splunk, and
+  hound-search for inspirations
+- How will I handle the configuration? Json sounds nice, but lisp too :P
+
+* Do more than just caching/searching
+
+"The ultimate yak-shaving"
+
+I would like to do more stuff with the things I have cached
+- mark as TODO
+- mark as favourites
+- add links between items
+  - especially those that can't be linked easily, like linking 2
+    projects
+  - Be able to add a note describing the link (you just can't do that
+    in GitLab)
+- add local-only comments on items
+  - put them in an org-mode file!?
+- automated tasks?
+  - useful for things that can take a while to index

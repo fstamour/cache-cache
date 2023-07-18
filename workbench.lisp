@@ -144,3 +144,22 @@ resource \"gitlab_group_label\" ~s {
 (length *epics*)
 (hash-table-count *epics*)
 (aref *epics* 0)
+
+
+;;; Trying to fetch my activities...
+
+;; It seems to always return the last 7 days instead of respecting the
+;; :after and :before...
+(progn
+  (format t "~%~%==================~%~%")
+  (loop :for event :across (http-request-get-all
+                            (puri:render-uri
+                             (make-uri "/api/v4/events"
+                                       (format-query
+                                        :after "2023-07-04"
+                                        :before "2023-07-07"
+                                        :scope :all))
+                             nil))
+        :do (format t "~%~%~a~%"
+                    (alexandria:hash-table-alist event))))
+
