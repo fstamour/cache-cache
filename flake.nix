@@ -1,5 +1,5 @@
 {
-  description = "Caching gitlab issues and more locally, for bazingly fast search";
+  description = "Caching GitLab issues and more locally, for blazingly fast search";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";

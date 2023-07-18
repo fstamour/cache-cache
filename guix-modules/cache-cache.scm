@@ -59,7 +59,7 @@
                  sbcl-chanl))
    (home-page "https://github.com/fstamour/cache-cache")
    (synopsis "")
-   (description "Caching gitlab issues and more locally, for bazingly fast search")
+   (description "Caching GitLab issues and more locally, for blazingly fast search")
    (license license:expat)))
 
 (define-public cache-cache
