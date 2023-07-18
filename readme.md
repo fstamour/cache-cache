@@ -1,4 +1,4 @@
-# cache-cache
+# Cache-cache
 
 > caching GitLab issues and more locally, for blazingly fast search
 
@@ -17,7 +17,7 @@ still use it almost every day. Even if GitLab's search API now works,
 it's much much faster to use this to search a local cache instead of
 going through GitLab's API.
 
-2023-07-18: update I renamed the project from local-gitlab to
+2023-07-18 update: I renamed the project from local-gitlab to
 cache-cache because I want to add more sources than just GitLab.
 
 ## About the name
