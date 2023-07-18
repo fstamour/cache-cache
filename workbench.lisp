@@ -163,3 +163,29 @@ resource \"gitlab_group_label\" ~s {
         :do (format t "~%~%~a~%"
                     (alexandria:hash-table-alist event))))
 
+
+;;; Trying to use serapeum to generate the documentation
+
+;; (asdf:load-system 'serapeum/docs)
+;; I had some issues with guix... lol
+(load
+ (merge-pathnames
+  "docs.lisp"
+  (asdf:system-source-directory 'serapeum)))
+
+(let ((root (asdf:system-source-directory 'local-gitlab))
+      (home (user-homedir-pathname)))
+  (if (uiop:absolute-pathname-p (enough-namestring root home))
+      (error "The system's location ~s is not in the user's home directory (~s), did you load the system from guix or nix?"
+             root home)
+
+      (serapeum.docs:update-function-reference
+       ;; (namestring (uiop:merge-pathnames* root "REFERENCE.md"))
+       "REFERENCE.md"
+       :local-gitlab)))
+
+;; It failed miserably because swank wasn't able to locate the source
+;; of a few symbols. I tried to modify serapeum/docs' code, but too
+;; many things assume that source information is available.
+
+
