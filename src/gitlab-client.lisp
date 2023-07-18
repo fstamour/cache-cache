@@ -189,6 +189,16 @@ send to GitLab for authentication"
   (gethash id *projects*))
 
 
+;;; Epics
+
+(defun get-all-epics ()
+  (http-request-get-all
+   (format nil
+           "~a/groups/~a/epics?per_page=1000"
+           *base-uri*
+           *root-group-id*)))
+
+
 ;;; Issues
 
 (defun remove-moved-issues (issues)
