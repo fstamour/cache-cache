@@ -189,3 +189,42 @@ resource \"gitlab_group_label\" ~s {
 ;; many things assume that source information is available.
 
 
+
+;;; "hot-loading" of common lisp systems installed in a guix profile
+;;;
+;;; I added a guix package definition for my project breeze and
+;;; installed it in a profile. I wanted to load it without restarting
+;;; the lisp image. I managed to do it by adding the path to the
+;;; profile to the enviroment variable XDG_CONFIG_DIRS and calling
+;;; (asdf:clear-source-registry). This works because guix's sbcl is
+;;; compiled with a patched asdf that looks into all directories in
+;;; XDG_CONFIG_DIRS for its configurations.
+
+(defvar *xdg-config-dirs*
+  (uiop:getenv "XDG_CONFIG_DIRS")
+  "The original value of the environment variable XDG_CONFIG_DIRS"  )
+
+;; Update the environment variable
+(setf (uiop:getenv
+       "XDG_CONFIG_DIRS")
+      (format nil "~a:~a"
+              *xdg-config-dirs*
+              (merge-pathnames
+               "dev/guix-configurations/lisp-profile/etc"
+               (user-homedir-pathname))))
+
+;; Check the value
+(uiop:getenv "XDG_CONFIG_DIRS")
+
+;; Restore the original value
+(setf (uiop:getenv "XDG_CONFIG_DIRS") *xdg-config-dirs*)
+
+
+;; Try to find the system
+(asdf:locate-system 'breeze)
+
+;; Try to reload the asdf's configurations
+(asdf:clear-source-registry)
+
+;; Try to load the system
+(asdf:load-system :breeze :force t)
