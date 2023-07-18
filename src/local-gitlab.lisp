@@ -230,6 +230,29 @@
       (issue-by-id id)
       (project-by-id id)))))
 
+
+
+(h:define-easy-handler (handle-statistics :uri "/stats")
+    ()
+  "Get statistics"
+  (setf (hunchentoot:content-type*) "text/javascript")
+  (jzon:stringify
+   (serapeum:dict
+    :projects (hash-table-count *projects*)
+    :issues (serapeum:dict*
+             (serapeum:frequencies (a:hash-table-values *issues*)
+                                   :key (lambda (item)
+                                          (if (item-closed-at-p item)
+                                              "closed"
+                                              "open")))
+             :total (hash-table-count *issues*)
+             :last-updated
+             (local-time:format-rfc1123-timestring
+              nil
+              (find-last-update-time *issues*))
+             ))
+   :pretty t))
+
 
 ;;; Initialization
 
@@ -268,6 +291,7 @@
     (setf *root-group-id* (read-line)))
   (initialize-gitlab-token)
   (read-cache)
+  ;; TODO do those in the background
   (initialize-issues)
   (initialize-projects)
   (log-stats)
