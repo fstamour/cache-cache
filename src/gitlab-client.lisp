@@ -352,15 +352,17 @@ send to GitLab for authentication"
   (cache-pathname :issue))
 
 (defun write-cache-file (name hash-table)
-  (simpbin:with-output-to-binary-file (output (cache-pathname name)
-                                              :if-exists :supersede)
-    (simpbin:write-header output)
-    (loop :for id
-            :being :the :hash-key :of hash-table
-              :using (hash-value object)
-          :do (simpbin:write-binary-string
-               (jzon:stringify object :stream nil)
-               output))))
+  (unless (or (null hash-table)
+              (zerop (hash-table-count hash-table)))
+    (simpbin:with-output-to-binary-file (output (cache-pathname name)
+                                                :if-exists :supersede)
+      (simpbin:write-header output)
+      (loop :for id
+              :being :the :hash-key :of hash-table
+                :using (hash-value object)
+            :do (simpbin:write-binary-string
+                 (jzon:stringify object :stream nil)
+                 output)))))
 
 (defun read-cache-file (name)
   (alexandria:if-let ((cache-pathname
