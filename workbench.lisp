@@ -3,6 +3,12 @@
 (initialize-projects)
 (initialize-issues)
 
+
+;; For interactive debugging
+(setf h:*catch-errors-p* nil)
+(setf h:*catch-errors-p* t)
+
+
 
 ;;; Group labels to terraform...
 
@@ -202,7 +208,7 @@ resource \"gitlab_group_label\" ~s {
 
 (defvar *xdg-config-dirs*
   (uiop:getenv "XDG_CONFIG_DIRS")
-  "The original value of the environment variable XDG_CONFIG_DIRS"  )
+  "The original value of the environment variable XDG_CONFIG_DIRS")
 
 ;; Update the environment variable
 (setf (uiop:getenv
@@ -219,7 +225,6 @@ resource \"gitlab_group_label\" ~s {
 ;; Restore the original value
 (setf (uiop:getenv "XDG_CONFIG_DIRS") *xdg-config-dirs*)
 
-
 ;; Try to find the system
 (asdf:locate-system 'breeze)
 
@@ -227,4 +232,11 @@ resource \"gitlab_group_label\" ~s {
 (asdf:clear-source-registry)
 
 ;; Try to load the system
-(asdf:load-system :breeze :force t)
+(asdf:load-system :breeze :force :all)
+
+;; TODO check if we're on guix, of if guix is available at least
+;; TODO ensure that path to profile is in XDG_CONFIG_DIRS
+;; TODO locate-system
+;; TODO guix install in profile, then clear-source-registry, locate again
+
+(asdf:load-system :flute)
