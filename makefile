@@ -12,7 +12,7 @@ run-dev:
 		--eval '(asdf:load-asd (truename "cache-cache.asd"))' \
 		--eval "(mapc #'asdf:load-system '(#:cache-cache #:swank))" \
 		--eval "(swank:create-server :port (find-port:find-port :min 4005) :dont-close t)" \
-		--eval "(cache-cache:serve)"
+		--eval "(cache-cache:serve :join-thread-p t)"
 
 
 .PHONY: help

@@ -6,7 +6,7 @@
 (in-package #:cache-cache.asd)
 
 (asdf:defsystem #:cache-cache
-  :description "A tool to work with a local cache of part of GitLab."
+  :description "A tool to help cache information locally; and do stuff with it."
   ;; TODO Long description: because it's faster (actually #.(read-whole-file "readme.org")
   :version "0.0.1"
   :author "Francis St-Amour"

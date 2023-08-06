@@ -1,11 +1,5 @@
 (in-package #:cache-cache)
 
-;; For interactive debugging
-#++
-(progn
-  (setf h:*catch-errors-p* nil)
-  (setf h:*catch-errors-p* t))
-
 
 
 ;;; Web server
@@ -231,7 +225,7 @@
       (project-by-id id)))))
 
 
-
+;; See log-stats
 (h:define-easy-handler (handle-statistics :uri "/stats")
     ()
   "Get statistics"
@@ -284,26 +278,31 @@
       (load config-file))))
 
 (defun serve (&key join-thread-p port interface)
-  (read-config)
-  (unless *root-group-id*
-    (format t "~&Please enter the root-group-id: ")
-    (finish-output)
-    (setf *root-group-id* (read-line)))
-  (initialize-gitlab-token)
-  (read-cache)
-  ;; TODO do those in the background
-  (initialize-issues)
-  (initialize-projects)
-  (log-stats)
-  (write-cache)
-  (start-server :port port :interface interface)
-  (start-cron)
-  (log:info "Server started on \"http://localhost:~a\"." (server-port))
-  (when join-thread-p
-    ;; TODO with-user-abort
-    (bt:join-thread (server-thread))))
+  (handler-case
+      (with-user-abort:with-user-abort
+        (read-config)
+        (unless *root-group-id*
+          (format t "~&Please enter the root-group-id: ")
+          (finish-output)
+          (setf *root-group-id* (read-line)))
+        (initialize-gitlab-token)
+        (read-cache)
+        (bt:make-thread
+         (lambda ()
+           (initialize-issues)
+           (initialize-projects)
+           (log-stats)
+           (write-cache)
+           (start-cron)))
+        (start-server :port port :interface interface)
+        (log:info "Server started on \"http://localhost:~a\"." (server-port))
+        (when join-thread-p
+          ;; TODO with-user-abort
+          (bt:join-thread (server-thread))))
+    (with-user-abort:user-abort ()
+      (quit 130))))
 
-(defun quit ()
+(defun quit (&optional (code 0))
   (log:info "Stopping cron...")
   (cl-cron:stop-cron)
   (log:info "Cron stopped.")
@@ -314,5 +313,5 @@
   (write-cache)
   (log:info "Persistent cache written.")
   (log:info "Quitting...")
-  (uiop:quit)
+  (uiop:quit code)
   (log:info "Bye!"))

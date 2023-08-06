@@ -71,6 +71,7 @@ even more code as it is.
 - I want to search guix...
   - other package managers: pypi, nix, npm, Debian's, Ubuntu's,
     docker.io...
+- github' gists
 
 ** Plan
 
@@ -98,3 +99,7 @@ I would like to do more stuff with the things I have cached
   - put them in an org-mode file!?
 - automated tasks?
   - useful for things that can take a while to index
+
+* References
+
+- Youtube API - https://developers.google.com/youtube/v3/docs
