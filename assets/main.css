@@ -1,0 +1,25 @@
+.center {
+    margin: auto;
+    width: 50em;
+}
+
+#query {
+    width: 100%;
+}
+
+#results {
+    margin-top: 1em;
+}
+
+#results td {
+    vertical-align: top;
+    width: 1%; /* trick to have same sized columns */
+}
+
+#results thead td {
+    border-bottom: 1px solid cornflowerblue;
+}
+
+#results tbody td:not(:last-child) {
+    border-right: 1px solid cornflowerblue;
+}
