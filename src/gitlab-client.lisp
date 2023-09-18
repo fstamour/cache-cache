@@ -7,7 +7,8 @@
   (let ((token
           (cons :private
                 (or (uiop:getenv "GITLAB_PRIVATE_TOKEN")
-                    (error "Environment variable GITLAB_PRIVATE_TOKEN is not set or empty.")))))
+                    (uiop:getenv "GITLAB_TOKEN")
+                    (error "Environment variables GITLAB_PRIVATE_TOKEN or GITLAB_TOKEN are not set or are empty.")))))
     ;; TODO validate token (at least check it's not nil)
     (setf *token* token))
   (if *token*
