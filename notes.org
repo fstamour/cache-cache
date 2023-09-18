@@ -1,6 +1,11 @@
 
 * Tasks
-** TODO Add a readme
+
+** TODO [#A] Unhandled USOCKET:NS-TRY-AGAIN-ERROR
+Unhandled USOCKET:NS-TRY-AGAIN-ERROR in thread #<SB-THREAD:THREAD
+tid=434578 "Cron CACHE-CACHE::UPDATE-ISSUES
+
+** DONE Add a readme
 ** TODO [#A] Add a test system
 ** TODO Update projects periodically
 ** TODO Get all epics
