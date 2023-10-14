@@ -31,3 +31,11 @@
 
 (defgeneric write-search-result (source search-result)
   (:documentation "Serialize one SEARCH RESULT from SOURCE as a json object, using jzon:*writer*."))
+
+(defmethod write-search-result (source (search-result string))
+  "Serialize one string from SOURCE as a json object, using jzon:*writer*."
+  (write-object*
+   "type" "string"
+   "id" 'null
+   "text" search-result
+   "url" 'null))

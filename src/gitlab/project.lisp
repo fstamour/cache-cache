@@ -8,7 +8,8 @@
    (format nil
            "~a/groups/~a/projects?per_page=100&simple=true&include_subgroups=true"
            (api-url source)
-           (id source))))
+           (group-id source))
+   (token source)))
 
 ;; I can't find a way to ask gitlab for "new or updated project" using
 ;; their rest api.
@@ -25,11 +26,12 @@
          *root-group-id*
          "2022-11-01T00:00:00.000-05:00"))
 
-(defun initialize-projects (source cache)
+(defun initialize-projects (source)
   "Get all projects from GitLab's *root-group-id* (recursively), store them by id."
   (log:info "Getting all the projects from GitLab...")
-  (setf *projects* (by-id (get-all-projects))))
+  (setf (%projects source)
+        (cache-cache::by-id (get-all-projects source))))
 
-(defun project-by-id (id)
+(defun project-by-id (source id)
   "Get a project by Id (from the in-memory cache)."
-  (gethash id *projects*))
+  (gethash id (%projects source)))

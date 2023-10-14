@@ -43,6 +43,14 @@
       </div>
     </div>
 
+    <hr>
+
+    <nav class="center">
+      <ol>
+        <li><a href="/config">Configurations</a></li>
+      </ol>
+    </nav>
+
     <script>
       /**************************************************/
       /* Generic utilities */
@@ -93,9 +101,11 @@
       /* DOM creation */
 
       const makeItemText = (item) =>
-            text(item.closed
+            text(item.type + ': ' +
+                 // TODO "closed" is not generic, maybe "prefix"?
+                 (item.closed
                  ? `(closed) ${item.text}`
-                 : item.text);
+                 : item.text));
 
       const makeItemLink = (item) =>
             t('a',
@@ -109,28 +119,21 @@
 
 
       const makeResultsList = (results) =>
-            t('ol', results.map((item) => t('li', makeItemLink(item))));
-
+            t('ol', results.map((item) =>
+                t('li',
+                  item.url ? makeItemLink(item) : makeItemText(item))));
 
       function render(resultsElement, results) {
-          const projects = results.filter(isProject);
-          const projectList = makeResultsList(projects);
-
-          const issues = results.filter(isIssue);
-          const closed = issues.filter(issue => issue.closed).length;
-
-          const issueList = makeResultsList(issues);
+          const itemList = makeResultsList(results);
 
           resultsElement.replaceChildren(
               t('table',
                 t('thead',
                   t('tr',
-                    t('td', text(`Projects (${projects.length})`)),
-                    t('td', text(`Issues (${issues.length - closed} open, ${closed} closed)`)))),
+                    t('td', text(`Results (${results.length})`)))),
                 t('tbody',
                   t('tr',
-                    t('td', projectList),
-                    t('td', issueList)))));
+                    t('td', itemList)))));
       }
 
       /**************************************************/

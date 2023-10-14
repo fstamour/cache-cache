@@ -3,6 +3,7 @@
 
 ;;; GitLab Token
 
+;; TODO serapeum struct for gitlab token
 
 #|
 ;;;;;;;;;;;; TODO Support other kind of access tokens

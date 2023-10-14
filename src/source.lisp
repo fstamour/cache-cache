@@ -25,6 +25,12 @@
    )
   (:documentation ""))
 
+(defmethod print-object ((source source) stream)
+  (print-unreadable-object (source stream :type t :identity t)
+    (format stream "sid: ~s name: ~s"
+            (source-id source)
+            (name source))))
+
 #++ ;; Use cache-cache.generic:initialize instead
 (defgeneric initialize-source (source)
   (:documentation "Initialize a SOURCE. Use this to register jobs."))

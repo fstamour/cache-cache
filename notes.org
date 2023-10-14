@@ -7,6 +7,10 @@ tid=434578 "Cron CACHE-CACHE::UPDATE-ISSUES
 
 ** DONE Add a readme
 ** TODO [#A] Add a test system
+** TODO Make stuff thread-safe
+
+See sbcl-concurrent-hash-tables or luckless
+
 ** TODO Update projects periodically
 ** TODO Get all epics
 ** TODO Get all labels

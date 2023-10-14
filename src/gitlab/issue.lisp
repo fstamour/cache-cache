@@ -3,11 +3,11 @@
 
 ;;; Issues
 
-(defun remove-moved-issues (issues)
+(defun remove-moved-issues (issue-list)
   "Remove issues that were moved"
   (remove-if-not #'(lambda (issue)
                      (eq 'null (gethash "moved_to_id" issue)))
-                 issues))
+                 issue-list))
 
 ;; Listing all the possible issue properties
 #+ (or)
@@ -44,55 +44,56 @@
 
 
 ;; TODO Maybe make a modifier too (see serapeum)
-(defun issue-by-id (id)
-  (gethash id *issues*))
+(defun issue-by-id (source id)
+  (gethash id (%issues source)))
 
-(defun issue-project (issue-id)
-  (project-by-id
-   (issue-project-id
-    (issue-by-id issue-id))))
-
+(defun issue-project (source issue-id)
+  (project-by-id source
+                 (issue-project-id (issue-by-id source issue-id))))
 
 
-(defun get-all-issues ()
+
+(defun get-all-issues (source)
   (remove-moved-issues
    (http-request-get-all
     (format nil
             "~a/groups/~a/issues?per_page=100"
-            *base-uri*
-            *root-group-id*))))
+            (api-url source)
+            (group-id source))
+    (token source))))
 
 #+ (or)
 (by-id
  (car (http-request-gitlab
        (format nil
                "~a/groups/~a/issues?per_page=10"
-               *base-uri*
-               *root-group-id*))))
+               (api-url source)
+               (group-id source)))))
 
-(defun get-new-and-updated-issues ()
-  (let* ((latest-time (find-last-update-time *issues*))
+(defun get-new-and-updated-issues (source)
+  (let* ((latest-time (find-last-update-time (%issues source)))
          (new-and-updated-issues
            (if latest-time
                (http-request-get-all
                 (format
                  nil
                  "~a/groups/~a/issues?per_page=100&updated_after=~a"
-                 *base-uri*
-                 *root-group-id*
+                 (api-url source)
+                 (group-id source)
                  (lt:format-rfc3339-timestring
                   nil
                   (lt:adjust-timestamp latest-time (offset :sec 1)))))
-               (get-all-issues))))
+               (get-all-issues source))))
     (log4cl:log-info (length new-and-updated-issues))
     new-and-updated-issues))
 
-(defun initialize-issues ()
-  (if *issues*
+(defun initialize-issues (source)
+  (if (%issues source)
       (progn
         (log:info "Updating the list of issues from GitLab...")
-        (by-id (get-new-and-updated-issues) *issues*))
+        (cache-cache::by-id (get-new-and-updated-issues source)
+                            (%issues source)))
       (progn
         (log:info "Getting all the issues from GitLab...")
-        (setf *issues* (by-id (get-all-issues)))
+        (setf (%issues source) (cache-cache::by-id (get-all-issues source)))
         (log:info "Got all the issues."))))

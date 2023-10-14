@@ -5,21 +5,27 @@
         #:cache-cache.source)
   ;; classes
   (:export
+   #:gitlab-instance
    #:gitlab-source
    #:gitlab-group-source)
   ;; functions
   (:export
+
    #:api-url
    #:graphql-url
    #:id
    #:domain
-   #:token))
+   #:token
+   #:instance
+
+   #:group-id
+
+   #:%projects
+   #:%issues))
 
 (in-package #:cache-cache.gitlab.source)
 
-;; TODO serapeum struct for gitlab token
-
-(defclass gitlab-source (source)
+(defclass gitlab-instance ()
   ((domain
     :initform "gitlab.com"
     :initarg :domain
@@ -29,37 +35,54 @@
     :initform (error ":token must be specified")
     :initarg :token
     :accessor token
-    :documentation "The token used to authenticate with GitLab."))
-  (:documentation "An abstract source with the common "))
+    :documentation "The token used to authenticate with GitLab.")))
+
+(defclass gitlab-source (source)
+  ((instance
+    :initform (error ":instance must be specified")
+    :initarg :instance
+    :accessor instance
+    :documentation "The GitLab instance's information, contains the credentials.")
+   (%projects
+    :initform nil
+    :accessor %projects
+    :documentation "In-memory cache of projects.")
+   (%issues
+    :initform nil
+    :accessor %issues
+    :documentation "In-memory cache of issues."))
+  (:documentation "An abstract source from GitLab."))
+
+(defmethod domain ((gitlab-source gitlab-source))
+  (domain (instance gitlab-source)))
+
+(defmethod token ((gitlab-source gitlab-source))
+  (token (instance gitlab-source)))
 
 (defun api-url (gitlab-source)
   "The GitLab API v4 root URL."
   (serapeum:fmt "https://~a/api/v4" (domain gitlab-source)))
 
+(defparameter *test-instance* (make-instance 'gitlab-instance
+                                             :token "1234"))
+
+(defparameter *test-source* (make-instance 'gitlab-source
+                                           :source-id -1
+                                           :name "test"
+                                           :instance *test-instance*))
+
 #++
-(equal (api-url (make-instance 'gitlab-source))
-       "https://gitlab.com/api/v4")
+(equal (api-url *test-source*) "https://gitlab.com/api/v4")
 
 (defun graphql-url (gitlab-source)
   "The GitLab API v4 root URL."
   (serapeum:fmt "https://~a/api/graphql" (domain gitlab-source)))
 
 #++
-(equal (graphql-url (make-instance 'gitlab-source :token nil))
-       "https://gitlab.com/api/graphql")
+(equal (graphql-url *test-source*) "https://gitlab.com/api/graphql")
 
-(defclass gitlab-group-source (gitlab-source)
-  ((id
-    :initform (error "A group id must be specified.")
-    :initarg :id
-    :accessor id
-    :documentation "The id of the GitLab group."))
-  (:documentation "A specific GitLab group."))
 
-#++
-(make-instance 'gitlab-group-source)
-#++
-(make-instance 'gitlab-group-source :id cache-cache::*root-group-id*)
+
 
 (defclass gitlab-personal-source (gitlab-source)
   (
@@ -67,25 +90,10 @@
    )
   (:documentation "Personal projects, groups, snippets, etc."))
 
-
-#++ ;; TODO
-(cl-cron:make-cron-job
- #'initialize-issues
- :hash-key 'update-issues)
-
-;; (cl-cron:delete-cron-job 'update-issues)
-
+
 
 ;; TODO
 (defun log-stats ()
   (log:info "There are currently ~D issues and ~D projects in memory."
             (hash-table-count *issues*)
             (hash-table-count *projects*)))
-
-;; TODO this is wrong, it's just a placeholder
-(defmethod initialize ((source gitlab-source))
-  (read-cache)
-  (initialize-issues)
-  (initialize-projects)
-  (log-stats)
-  (write-cache))

@@ -63,17 +63,18 @@
 (defun handler/search (query &optional type)
   (with-streaming-json-array ()
     (loop :for source :in *sources*
-          ;; TODO perhaps make some kind of "streaming interface" for rummage?
-          :for search-results = (rummage source query :limit 50 :type type)
+          ;; TODO perhaps make some kind of "streaming interface" for search-source?
+          :for search-results = (search-source source query :limit 50 :type type)
           :do (loop :for search-result :in search-results
                     :do  (write-search-result source search-result)))))
 
-(h:define-easy-handler (rummage :uri "/search")
+(h:define-easy-handler (search-sources :uri "/search")
     ((query :parameter-type 'string :request-type :get :real-name "q")
      (type :parameter-type 'string :request-type :get :real-name "type"))
   (setf (hunchentoot:content-type*) "text/javascript")
-  (when (str:non-empty-string-p query)
-    (handler/search query type)))
+  (if (str:non-blank-string-p query)
+      (handler/search query type)
+      "[]"))
 
 
 (h:define-easy-handler (get-item :uri "/item")
@@ -110,6 +111,12 @@
               (find-last-update-time *issues*))
              ))
    :pretty t))
+
+(h:define-easy-handler (config-page :uri "/config")
+    ()
+  "Show the current configuration."
+  (setf (hunchentoot:content-type*) "text/plain")
+  (format nil "~A" *sources*))
 
 
 ;;; Initialization

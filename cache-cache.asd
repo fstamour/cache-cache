@@ -51,13 +51,14 @@
    (:file "cli")
    (:module "gitlab"
     :components
-    ((:file "source")
-     (:file "client")
-     (:file "token")
-     (:file "pagination")
-     (:file "project")
-     (:file "issue")
-     (:file "epic")
+    ((:file "source")                   ; source
+     (:file "group")                    ; source
+     (:file "client")                   ; client
+     (:file "token")                    ; client
+     (:file "pagination")               ; client
+     (:file "project")                  ; client
+     (:file "issue")                    ; client
+     (:file "epic")                     ; client
      ;; TODO (:file "label")
      ;; TODO (:file "reference")
      ))))
