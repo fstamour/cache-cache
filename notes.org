@@ -108,3 +108,4 @@ I would like to do more stuff with the things I have cached
 * References
 
 - Youtube API - https://developers.google.com/youtube/v3/docs
+- https://gitlab.com/-/graphql-explorer

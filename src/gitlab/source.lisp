@@ -1,6 +1,8 @@
 (defpackage #:cache-cache.gitlab.source
   (:documentation "")
-  (:use #:cl)
+  (:use #:cl
+        #:cache-cache.generic
+        #:cache-cache.source)
   ;; classes
   (:export
    #:gitlab-source
@@ -10,20 +12,24 @@
    #:api-url
    #:graphql-url
    #:id
-   #:domain))
+   #:domain
+   #:token))
 
 (in-package #:cache-cache.gitlab.source)
 
 ;; TODO serapeum struct for gitlab token
 
-(defclass gitlab-source (cache-cache.source:source)
+(defclass gitlab-source (source)
   ((domain
     :initform "gitlab.com"
     :initarg :domain
     :accessor domain
     :documentation "The GitLab API v4 root URL.")
-   ;; TODO Token??
-   )
+   (token
+    :initform (error ":token must be specified")
+    :initarg :token
+    :accessor token
+    :documentation "The token used to authenticate with GitLab."))
   (:documentation "An abstract source with the common "))
 
 (defun api-url (gitlab-source)
@@ -39,7 +45,7 @@
   (serapeum:fmt "https://~a/api/graphql" (domain gitlab-source)))
 
 #++
-(equal (graphql-url (make-instance 'gitlab-source))
+(equal (graphql-url (make-instance 'gitlab-source :token nil))
        "https://gitlab.com/api/graphql")
 
 (defclass gitlab-group-source (gitlab-source)
@@ -60,3 +66,26 @@
    ;; No need for slots, the token should be enough...
    )
   (:documentation "Personal projects, groups, snippets, etc."))
+
+
+#++ ;; TODO
+(cl-cron:make-cron-job
+ #'initialize-issues
+ :hash-key 'update-issues)
+
+;; (cl-cron:delete-cron-job 'update-issues)
+
+
+;; TODO
+(defun log-stats ()
+  (log:info "There are currently ~D issues and ~D projects in memory."
+            (hash-table-count *issues*)
+            (hash-table-count *projects*)))
+
+;; TODO this is wrong, it's just a placeholder
+(defmethod initialize ((source gitlab-source))
+  (read-cache)
+  (initialize-issues)
+  (initialize-projects)
+  (log-stats)
+  (write-cache))

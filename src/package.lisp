@@ -6,7 +6,11 @@
 
 (defpackage #:cache-cache
   (:documentation "Package to interact with GitLab")
-  (:use #:cl #:cache-cache.config)
+  (:use #:cl
+        #:cache-cache.config
+        #:cache-cache.generic
+        #:cache-cache.source
+        #:cache-cache.search)
   (:local-nicknames (#:h #:hunchentoot)
                     (#:a #:alexandria)
                     (#:lt #:local-time)

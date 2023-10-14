@@ -40,12 +40,27 @@
   :pathname "src"
   :serial t
   :components
-  ((:file "package")
+  ((:file "generic")
+   (:file "source")
+   (:file "search")
+   (:file "package")
    (:file "variables")
    (:file "utilities")
-   (:file "gitlab-client")
+   (:file "json")
    (:file "cache-cache")
-   (:file "cli")))
+   (:file "cli")
+   (:module "gitlab"
+    :components
+    ((:file "source")
+     (:file "client")
+     (:file "token")
+     (:file "pagination")
+     (:file "project")
+     (:file "issue")
+     (:file "epic")
+     ;; TODO (:file "label")
+     ;; TODO (:file "reference")
+     ))))
 
 (asdf:defsystem #:cache-cache/config
   :description "System to configure the \"cache-cache\" system."

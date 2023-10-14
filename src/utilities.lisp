@@ -1,5 +1,8 @@
 (in-package #:cache-cache)
 
+
+;;; URL manipulations
+
 (defun ensure/ (x)
   (if (and (stringp x)
            (char= (char x (1- (length x))) #\/))
@@ -29,6 +32,7 @@
 (defun format-query* (plist)
   (apply #'format-query plist))
 
+
 #++
 (make-uri
  "groups/"
@@ -38,3 +42,40 @@
   :per-page 5
   :include-subgroups t
   :order-by :updated-at))
+
+
+;;; Environment variables
+
+(defun try-get-env (names &key (validatep t))
+  "Try to get an environment variable's value."
+  (or
+   (loop :for name :in names
+         :for value = (uiop:getenv name)
+         :when (and value
+                    (or (not validatep)
+                        (str:non-blank-string-p value)))
+           :do
+              (return value))
+   (when (eq :error validatep)
+     (error "None of these environment variables are set and not empty:~&~{  - ~s~&~}"
+            names))))
+
+#++ (try-get-env '("GITLAB_TOKEN"))
+#++ (try-get-env '("GITLAB_TOKEN" "GITLAB_PRIVATE_TOKEN" "PATH"))
+
+
+
+;;; sequence to hash-table
+
+(defun by (sequence-of-hash-table &key (key #'item-id) destination)
+  "Convert a sequence of items to a map of key -> item."
+  (let ((result (or destination (make-hash-table :test 'equal))))
+    (map nil
+         #'(lambda (item &aux (key (funcall key item)))
+             (setf (gethash key result) item))
+         sequence-of-hash-table)
+    result))
+
+(defun by-id (sequence-of-hash-table &optional destination)
+  "Convert a sequence of items to a map of id -> item."
+  (by sequence-of-hash-table :destination destination))
