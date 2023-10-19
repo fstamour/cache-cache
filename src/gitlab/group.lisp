@@ -48,10 +48,6 @@
   (write-cache source)
   (log:info "Done initializing ~a." source))
 
-(defmethod search-source ((source gitlab-group-source) query &key &allow-other-keys)
-  "Search through the GitLab group for QUERY."
-  (list "TODO search-source ((source <mark>gitlab-group-source</mark>) query &key &allow-other-keys)"))
-
 (defmethod item ((source gitlab-group-source) id)
   "Get the item ID from SOURCE."
   "TODO item ((source gitlab-group-source) id)")

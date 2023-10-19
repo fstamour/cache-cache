@@ -71,11 +71,15 @@
 ;; criterion)
 (defun handler/search (query &optional type)
   (with-streaming-json-array ()
+    #++
     (loop :for source :in *sources*
           ;; TODO perhaps make some kind of "streaming interface" for search-source?
           :for search-results = (search-source source query :limit 50 :type type)
           :do (loop :for search-result :in search-results
-                    :do  (write-search-result source search-result)))))
+                    :do  (write-search-result source search-result)))
+    (loop :for source :in *sources*
+          ;; TODO perhaps make some kind of "streaming interface" for search-source?
+          :do (search-source source query :limit 50 :type type))))
 
 (h:define-easy-handler (search-sources :uri "/search")
     ((query :parameter-type 'string :request-type :get :real-name "q")

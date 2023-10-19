@@ -12,8 +12,7 @@
   :author "Francis St-Amour"
   :licence "Public domain"
   :depends-on
-  (#:cache-cache/config
-   ;; For making HTTP requests
+  (;; For making HTTP requests
    #:drakma
    ;; For JSON
    #:com.inuoe.jzon
@@ -41,6 +40,7 @@
   :serial t
   :components
   ((:file "generic")
+   (:file "configuration")
    (:file "source")
    (:file "cache")
    (:file "search")
@@ -64,13 +64,3 @@
      ;; TODO (:file "label")
      ;; TODO (:file "reference")
      ))))
-
-(asdf:defsystem #:cache-cache/config
-  :description "System to configure the \"cache-cache\" system."
-  :version "0.0.1"
-  :author "Francis St-Amour"
-  :licence "Public domain"
-  :pathname "src"
-  :serial t
-  :components
-  ((:file "configurations")))

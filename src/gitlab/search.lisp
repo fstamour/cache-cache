@@ -11,6 +11,7 @@
                 #:issue-title
                 #:item-name-with-namespace
                 #:item-web-url
+                #:issue-updated-at
                 #:issue-closed-at-p)
   (:import-from #:cache-cache.search
                 #:find-by)
@@ -72,7 +73,6 @@
            (find-issues query
                         (source-by-id 1)))))
 
-
 (defun handler/search (query source &optional type)
   ;; Add projects
   (when (or (null type)
@@ -99,3 +99,7 @@
            "text" (issue-title issue)
            "url" (item-web-url issue)
            "closed" (issue-closed-at-p issue)))))
+
+(defmethod search-source ((source gitlab-group-source) query &key type &allow-other-keys)
+  "Search through the GitLab group for QUERY."
+  (handler/search query source type))
