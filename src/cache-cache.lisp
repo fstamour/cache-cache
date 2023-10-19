@@ -129,7 +129,14 @@
     ()
   "Show the current configuration."
   (setf (hunchentoot:content-type*) "text/plain")
-  (format nil "~A" *sources*))
+  (with-output-to-string (*standard-output*)
+    (format t "Sources: ~{~%  - ~A~}~%~%" *sources*)
+    (format t "Is swank loaded? ~A~%"
+            (find-package '#:swank))
+    (format t "Is slynk loaded? ~A~%"
+            (find-package '#:slynk))
+    (format t "Is hunchentoot configured to catch errors? ~A~%" h:*catch-errors-p*)
+    (format t "Hunchentoot's h:*dispatch-table*: ~{~%  - ~A~}~%~%" h:*dispatch-table*)))
 
 
 ;;; Initialization
