@@ -1,11 +1,10 @@
-(defpackage #:cache-cache.search
-  (:documentation "Interface and utilities for searching.")
-  (:use #:cl
-        #:cache-cache.generic)
+(uiop:define-package #:cache-cache.search
+    (:documentation "Interface and utilities for searching.")
+  (:use #:cl)
+  (:use-reexport #:cache-cache.generic)
   (:export
    #:search-result
-   #:source
-   #:id))
+   #:find-by))
 
 (in-package #:cache-cache.search)
 
@@ -42,3 +41,10 @@
     :reader id
     :documentation "The id of the result, this id is source-specific."))
   (:documentation "Represents one item in a search-result"))
+
+(defun find-by (query source resource key)
+  "Return the RESOURCE in SOURCE that contains all the parts of QUERY in their KEY."
+  (search-in-list/and
+   (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
+   (alexandria:hash-table-values (resources source resource))
+   :key key))

@@ -7,5 +7,6 @@
   (http-request-get-all
    (format nil
            "~a/groups/~a/epics?per_page=1000"
-           *base-uri*
-           *root-group-id*)))
+           (api-url source)
+           (group-id source))
+   (token source)))

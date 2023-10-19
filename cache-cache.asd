@@ -60,6 +60,7 @@
      (:file "project")                  ; client
      (:file "issue")                    ; client
      (:file "epic")                     ; client
+     (:file "search")
      ;; TODO (:file "label")
      ;; TODO (:file "reference")
      ))))

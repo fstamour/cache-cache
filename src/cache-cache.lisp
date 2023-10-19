@@ -50,10 +50,6 @@
 
 ;;;
 
-(defun source-by-id (source-id)
-  (find source-id *sources* :key #'source-id))
-
-#++ (source-by-id 1)
 
 (defun map-sources (function
                     &key (sources *sources*) result-type threadp catch-errors-p)

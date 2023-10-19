@@ -1,9 +1,11 @@
-(defpackage #:cache-cache.gitlab.source
-  (:documentation "")
-  (:use #:cl
-        #:cache-cache.generic
-        #:cache-cache.source
-        #:cache-cache.cache)
+(uiop:define-package #:cache-cache.gitlab.source
+    (:documentation "")
+  (:use #:cl)
+  (:use-reexport
+   #:cache-cache
+   #:cache-cache.generic
+   #:cache-cache.source
+   #:cache-cache.cache)
   (:local-nicknames
    (#:a #:alexandria)
    (#:jzon #:com.inuoe.jzon))

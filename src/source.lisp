@@ -1,16 +1,7 @@
-(defpackage #:cache-cache.source
-  (:documentation "Generic sources of information")
-  (:use #:cl
-        #:cache-cache.generic)
-  (:export
-   ;; #:source
-   ;; #:source-id
-   ;; #:name
-   #:search-source
-   #:read-cache
-   #:write-cache
-   #:item
-   #:resources))
+(uiop:define-package #:cache-cache.source
+    (:documentation "Generic sources of information")
+  (:use #:cl)
+  (:use-reexport #:cache-cache.generic))
 
 (in-package #:cache-cache.source)
 
@@ -34,34 +25,3 @@
     (format stream "sid: ~s name: ~s"
             (source-id source)
             (name source))))
-
-(defgeneric resources (source type)
-  (:documentation "Get the SOURCE's in-memory cache for the resouces of type TYPE"))
-
-(defgeneric (setf resources) (new-resources source type)
-  (:documentation "Set the SOURCE's in-memory cache for the resouces of type TYPE"))
-
-;; TODO clear-cache (in-memory v.s. persistent)
-#++
-(defgeneric clear-cache (source)
-  (:documentation ""))
-
-(defgeneric read-cache (source)
-  (:documentation "Read a SOURCE's persistent cache in-memory."))
-
-(defgeneric write-cache (source)
-  (:documentation "Write a SOURCE's in-memory cache to persistent storage."))
-
-;; TODO register-job: a wrapper on cl-cron:make-cron-job
-;; - add error handling
-;; - add logging
-;; - perhaps more? breakers?
-;; (defgeneric register-job (source function) ...)
-
-;; TODO (defgeneric statistics (source))
-
-(defgeneric search-source (source query &key &allow-other-keys)
-  (:documentation "Search through SOURCE for QUERY."))
-
-(defgeneric item (source id)
-  (:documentation "Get the item ID from SOURCE."))

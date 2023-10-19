@@ -40,7 +40,7 @@
   (write-cache-file source :issue))
 
 (defmethod initialize ((source gitlab-group-source) &key &allow-other-keys)
-  (log:info "TODO initializing ~a..." source)
+  (log:info "initializing ~a..." source)
   (read-cache source)
   (initialize-issues source)
   (initialize-projects source)

@@ -9,18 +9,16 @@
                 #:write-object*)
   (:import-from #:cache-cache.gitlab.client
                 #:issue-title
-                #:item-name-with-namespace)
+                #:item-name-with-namespace
+                #:item-web-url
+                #:issue-closed-at-p)
   (:import-from #:cache-cache.search
-                #:search-in-list/and))
+                #:find-by)
+  (:export
+   #:find-issues
+   #:find-projects))
 
 (in-package #:cache-cache.gitlab.search)
-
-(defun find-by (query source resource key)
-  "Return the RESOURCE in SOURCE that contains all the parts of QUERY in their KEY."
-  (search-in-list/and
-   (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
-   (a:hash-table-values (resources source resource))
-   :key key))
 
 (defun find-issues (query source)
   "Return the issues that contains all the parts of QUERY in their title."
@@ -31,11 +29,13 @@
   (find-by query source :project #'item-name-with-namespace))
 
 
+;; TODO utils
 (defun timestamp-string< (a b)
   (lt:timestamp<
    (lt:parse-rfc3339-timestring a)
    (lt:parse-rfc3339-timestring b)))
 
+;; TODO utils
 (defun timestamp-string> (a b)
   (lt:timestamp>
    (lt:parse-rfc3339-timestring a)
@@ -70,18 +70,17 @@
    (format t "~&=================================")
    (mapcar #'issue-title
            (find-issues query
-                        (a:hash-table-values *issues*)
-                        #'issue-title))))
+                        (source-by-id 1)))))
 
 
-(defun handler/search (query &optional type)
+(defun handler/search (query source &optional type)
   ;; Add projects
   (when (or (null type)
             (eq type :project))
-    (loop :for project :in (find-projects query)
+    (loop :for project :in (find-projects query source)
           :do (write-object*
                "type" "project"
-               "id"  (item-id project)
+               "id"  (id project)
                "text" (item-name-with-namespace project)
                "url" (format nil "~a/issues" (item-web-url project)))))
   ;; Add issues
@@ -91,12 +90,12 @@
       :for issue :in
                  (sort
                   (if (str:non-empty-string-p query)
-                      (find-issues query)
+                      (find-issues query source)
                       (issues-created-in-the-last-7-days))
                   #'compare-issues)
       :do (write-object*
            "type" "issue"
-           "id" (issue-id issue)
+           "id" (id issue)
            "text" (issue-title issue)
-           "url" (issue-web-url issue)
+           "url" (item-web-url issue)
            "closed" (issue-closed-at-p issue)))))

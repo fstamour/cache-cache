@@ -1,9 +1,10 @@
-(defpackage #:cache-cache.gitlab.client
-  (:documentation "Utilities to make requests to GitLab")
-  (:use #:cl
-        #:cache-cache.generic
-        #:cache-cache.source
-        #:cache-cache.gitlab.source)
+(uiop:define-package #:cache-cache.gitlab.client
+    (:documentation "Utilities to make requests to GitLab")
+  (:use #:cl)
+  (:use-reexport
+   #:cache-cache.generic
+   #:cache-cache.source
+   #:cache-cache.gitlab.source)
   (:local-nicknames (#:a #:alexandria)
                     (#:lt #:local-time)
                     (#:jzon #:com.inuoe.jzon)))
