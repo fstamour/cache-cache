@@ -67,7 +67,11 @@
 
 ;;; sequence to hash-table
 
-(defun by (sequence-of-hash-table &key (key #'item-id) destination)
+(defmethod id ((object hash-table))
+  "Return the OBJECT's \"id\" property."
+  (gethash "id" object))
+
+(defun by (sequence-of-hash-table &key (key #'id) destination)
   "Convert a sequence of items to a map of key -> item."
   (let ((result (or destination (make-hash-table :test 'equal))))
     (map nil

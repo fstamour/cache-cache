@@ -28,17 +28,23 @@
 ;; (cl-cron:delete-cron-job 'update-issues)
 
 (defmethod read-cache ((source gitlab-group-source))
-  (log:info "TODO read-cache ((source gitlab-group-source))"))
+  ;; TODO this code is horrible...
+  (log:info "Reading all the projects from the cache...")
+  (setf (resources source :project) (read-cache-file source :project))
+  (log:info "Reading all the issues from the cache...")
+  (setf (resources source :issue) (read-cache-file source :issue)))
 
 (defmethod write-cache ((source gitlab-group-source))
-  (log:info "TODO write-cache ((source gitlab-group-source))")  )
+  ;; TODO this code is horrible...
+  (write-cache-file source :project)
+  (write-cache-file source :issue))
 
-(defmethod initialize ((source gitlab-group-source))
+(defmethod initialize ((source gitlab-group-source) &key &allow-other-keys)
   (log:info "TODO initializing ~a..." source)
   (read-cache source)
-  ;; (initialize-issues)
-  ;; (initialize-projects)
-  ;; (log-stats)
+  (initialize-issues source)
+  (initialize-projects source)
+  (log-stats source)
   (write-cache source)
   (log:info "Done initializing ~a." source))
 

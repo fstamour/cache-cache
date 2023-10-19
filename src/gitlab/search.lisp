@@ -1,28 +1,34 @@
-e(defpackage #:cache-cache.gitlab.search
-   (:documentation "Interface to search the local cache for GitLab sources")
-   (:use #:cl
-         #:cache-cache.gitlab.source)
-   (:local-nicknames (#:a #:alexandria)
-                     (#:lt #:local-time))
-   (:import-from #:com.inuoe.jzon
-                 #:write-value*
-                 #:write-object*))
+(defpackage #:cache-cache.gitlab.search
+  (:documentation "Interface to search the local cache for GitLab sources")
+  (:use #:cl
+        #:cache-cache.gitlab.source)
+  (:local-nicknames (#:a #:alexandria)
+                    (#:lt #:local-time))
+  (:import-from #:com.inuoe.jzon
+                #:write-value*
+                #:write-object*)
+  (:import-from #:cache-cache.gitlab.client
+                #:issue-title
+                #:item-name-with-namespace)
+  (:import-from #:cache-cache.search
+                #:search-in-list/and))
 
+(in-package #:cache-cache.gitlab.search)
 
-
-(defun find-issues (query)
-  "Return the issues that contains all the parts of QUERY in their KEY."
+(defun find-by (query source resource key)
+  "Return the RESOURCE in SOURCE that contains all the parts of QUERY in their KEY."
   (search-in-list/and
    (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
-   (a:hash-table-values *issues*)
-   :key #'issue-title))
+   (a:hash-table-values (resources source resource))
+   :key key))
 
-(defun find-projects (query)
-  "Return the issues that contains all the parts of QUERY in their KEY."
-  (search-in-list/and
-   (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
-   (a:hash-table-values *projects*)
-   :key #'item-name-with-namespace))
+(defun find-issues (query source)
+  "Return the issues that contains all the parts of QUERY in their title."
+  (find-by query source :issue #'issue-title))
+
+(defun find-projects (query source)
+  "Return the projects that contains all the parts of QUERY in their \"name with namespace\"."
+  (find-by query source :project #'item-name-with-namespace))
 
 
 (defun timestamp-string< (a b)

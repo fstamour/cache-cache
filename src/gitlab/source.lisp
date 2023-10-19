@@ -2,7 +2,11 @@
   (:documentation "")
   (:use #:cl
         #:cache-cache.generic
-        #:cache-cache.source)
+        #:cache-cache.source
+        #:cache-cache.cache)
+  (:local-nicknames
+   (#:a #:alexandria)
+   (#:jzon #:com.inuoe.jzon))
   ;; classes
   (:export
    #:gitlab-instance
@@ -20,8 +24,10 @@
 
    #:group-id
 
-   #:%projects
-   #:%issues))
+   #:initialize-epics
+   #:initialize-issues
+   #:initialize-labels
+   #:initialize-projects))
 
 (in-package #:cache-cache.gitlab.source)
 
@@ -63,6 +69,22 @@
   "The GitLab API v4 root URL."
   (serapeum:fmt "https://~a/api/v4" (domain gitlab-source)))
 
+
+
+(defmethod resources ((source gitlab-source) (resouce (eql :project)))
+  (%projects source))
+
+(defmethod (setf resources) (new-resources (source gitlab-source) (resouce (eql :project)))
+  (setf (%projects source) new-resources))
+
+(defmethod resources ((source gitlab-source) (resouce (eql :issue)))
+  (%issues source))
+
+(defmethod (setf resources) (new-resources (source gitlab-source) (resouce (eql :issue)))
+  (setf (%issues source) new-resources))
+
+
+
 (defparameter *test-instance* (make-instance 'gitlab-instance
                                              :token "1234"))
 
@@ -84,6 +106,12 @@
 
 
 
+(defmethod initialize-epics (source))
+(defmethod initialize-issues (source))
+(defmethod initialize-labels (source))
+(defmethod initialize-projects (source))
+
+
 (defclass gitlab-personal-source (gitlab-source)
   (
    ;; No need for slots, the token should be enough...
@@ -93,7 +121,8 @@
 
 
 ;; TODO
-(defun log-stats ()
+(defun log-stats (source)
   (log:info "There are currently ~D issues and ~D projects in memory."
-            (hash-table-count *issues*)
-            (hash-table-count *projects*)))
+            ;; TODO use method "resources" instead
+            (a:if-let ((issues (%issues source))) (hash-table-count issues) 0)
+            (a:if-let ((projects (%projects source))) (hash-table-count projects) 0)))

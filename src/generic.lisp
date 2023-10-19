@@ -22,5 +22,5 @@
 (defgeneric source-id (object)
   (:documentation "Get the ID of the source."))
 
-(defgeneric initialize (object)
+(defgeneric initialize (object &key &allow-other-keys)
   (:documentation "Initialize OBJECT."))

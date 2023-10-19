@@ -26,12 +26,12 @@
          *root-group-id*
          "2022-11-01T00:00:00.000-05:00"))
 
-(defun initialize-projects (source)
+(defmethod initialize-projects ((source gitlab-group-source))
   "Get all projects from GitLab's *root-group-id* (recursively), store them by id."
   (log:info "Getting all the projects from GitLab...")
-  (setf (%projects source)
+  (setf (resources source :project)
         (cache-cache::by-id (get-all-projects source))))
 
 (defun project-by-id (source id)
   "Get a project by Id (from the in-memory cache)."
-  (gethash id (%projects source)))
+  (gethash id (resources source :project)))

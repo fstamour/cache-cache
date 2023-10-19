@@ -6,7 +6,11 @@
    ;; #:source
    ;; #:source-id
    ;; #:name
-   #:search-source))
+   #:search-source
+   #:read-cache
+   #:write-cache
+   #:item
+   #:resources))
 
 (in-package #:cache-cache.source)
 
@@ -31,9 +35,11 @@
             (source-id source)
             (name source))))
 
-#++ ;; Use cache-cache.generic:initialize instead
-(defgeneric initialize-source (source)
-  (:documentation "Initialize a SOURCE. Use this to register jobs."))
+(defgeneric resources (source type)
+  (:documentation "Get the SOURCE's in-memory cache for the resouces of type TYPE"))
+
+(defgeneric (setf resources) (new-resources source type)
+  (:documentation "Set the SOURCE's in-memory cache for the resouces of type TYPE"))
 
 ;; TODO clear-cache (in-memory v.s. persistent)
 #++

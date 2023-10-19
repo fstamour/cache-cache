@@ -55,10 +55,23 @@
 
 #++ (source-by-id 1)
 
+(defun map-sources (function
+                    &key (sources *sources*) result-type threadp catch-errors-p)
+  (when (and threadp result-type)
+    (error "Invalid combination of parameters: THREADP and RESULT-TYPE cannot be specified at the same time."))
+  (if threadp
+      (loop :for source :in sources
+            :do (bt:make-thread
+                 (lambda ()
+                   ;; TODO error-handling
+                   (funcall function source))
+                 :name (format nil "map-sources: ~a ~a" function source)))
+      (map result-type function sources)))
+
 
 ;;; Handlers
 
-;; TODO be able to limit by source (e.g. add a "list of source-ids"
+;; TODO be able to limit by source (e.g. add a "list of source-ids")
 ;; criterion)
 (defun handler/search (query &optional type)
   (with-streaming-json-array ()
@@ -140,11 +153,7 @@
   (handler-case
       (with-user-abort:with-user-abort
         (read-config)
-        (loop :for source :in *sources*
-              :do (bt:make-thread
-                   (lambda ()
-                     ;; TODO error-handling
-                     (initialize source))))
+        (map-sources #'initialize :threadp t)
         (start-cron)
         (start-server :port port :interface interface)
         ;; TODO don't hard-code the base url
@@ -163,7 +172,7 @@
   (h:stop *server* :soft t)
   (log:info "Huchentoot stopped.")
   (log:info "Writing the persistent cache...")
-  (write-cache)
+  (map-sources #'write-cache)
   (log:info "Persistent cache written.")
   (log:info "Quitting...")
   (uiop:quit code)

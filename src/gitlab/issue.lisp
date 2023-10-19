@@ -45,7 +45,7 @@
 
 ;; TODO Maybe make a modifier too (see serapeum)
 (defun issue-by-id (source id)
-  (gethash id (%issues source)))
+  (gethash id (resources source :issue)))
 
 (defun issue-project (source issue-id)
   (project-by-id source
@@ -71,7 +71,7 @@
                (group-id source)))))
 
 (defun get-new-and-updated-issues (source)
-  (let* ((latest-time (find-last-update-time (%issues source)))
+  (let* ((latest-time (find-last-update-time (resources source :issue)))
          (new-and-updated-issues
            (if latest-time
                (http-request-get-all
@@ -82,18 +82,19 @@
                  (group-id source)
                  (lt:format-rfc3339-timestring
                   nil
-                  (lt:adjust-timestamp latest-time (offset :sec 1)))))
+                  (lt:adjust-timestamp latest-time (offset :sec 1))))
+                (token source))
                (get-all-issues source))))
     (log4cl:log-info (length new-and-updated-issues))
     new-and-updated-issues))
 
-(defun initialize-issues (source)
-  (if (%issues source)
+(defmethod initialize-issues ((source gitlab-group-source))
+  (if (resources source :issue)
       (progn
         (log:info "Updating the list of issues from GitLab...")
         (cache-cache::by-id (get-new-and-updated-issues source)
-                            (%issues source)))
+                            (resources source :issue)))
       (progn
         (log:info "Getting all the issues from GitLab...")
-        (setf (%issues source) (cache-cache::by-id (get-all-issues source)))
+        (setf (resources source :issue) (cache-cache::by-id (get-all-issues source)))
         (log:info "Got all the issues."))))

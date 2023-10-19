@@ -42,6 +42,7 @@
   :components
   ((:file "generic")
    (:file "source")
+   (:file "cache")
    (:file "search")
    (:file "package")
    (:file "variables")

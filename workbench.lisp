@@ -1,12 +1,56 @@
-(in-package #:cache-cache)
-
-(initialize-projects)
-(initialize-issues)
-
+(in-package #:cl-user)
 
 ;; For interactive debugging
 (setf h:*catch-errors-p* nil)
 (setf h:*catch-errors-p* t)
+
+
+
+(in-package #:cache-cache.gitlab.source)
+
+(import 'cache-cache::source-by-id)
+
+(initialize-projects (source-by-id 1))
+
+(initialize-issues (source-by-id 1))
+
+(cache-filename (source-by-id 1) :issue)
+;; => "1-issue"
+
+(cache-pathname (source-by-id 1) :issue)
+;; => #P"/home/fstamour/.cache/cache-cache/1-issue.sbin"
+
+
+(write-cache-file (source-by-id 1) :project)
+(write-cache-file (source-by-id 1) :issue)
+
+
+(read-cache-file (source-by-id 1) :project)
+
+(time
+ (read-cache-file (source-by-id 1) :issue))
+;; 0.623 seconds of real time
+;; 0.622624 seconds of total run time (0.614839 user, 0.007785 system)
+;; [ Real times consist of 0.044 seconds GC time, and 0.579 seconds non-GC time. ]
+;; [ Run times consist of 0.041 seconds GC time, and 0.582 seconds non-GC time. ]
+;; 100.00% CPU
+;; 2,190,069,700 processor cycles
+;; 257,261,856 bytes consed
+
+(in-package #:cache-cache.gitlab.search)
+
+(import 'cache-cache::source-by-id)
+
+(find-issues "clean" (source-by-id 1))
+
+
+;;;;;;;;;;; Stuff below this is probably out of date
+
+(in-package #:cache-cache)
+
+
+(initialize-projects)
+(initialize-issues)
 
 
 

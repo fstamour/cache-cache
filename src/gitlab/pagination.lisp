@@ -49,6 +49,13 @@
   (extract-next-uri *last-headers*))
 
 
+(defun errorp (response)
+  (and (hash-table-p response)
+       (or
+        (gethash "message" response)
+        (gethash "error" response)
+        (gethash "error_description" response))))
+
 
 ;;; TODO Handle rate-limiting gracefully https://docs.gitlab.com/ee/user/admin_area/settings/user_and_ip_rate_limits.html#response-headers
 ;;; e.g.
@@ -75,11 +82,11 @@
         ;; (if )
         (setf *last-headers* headers)
         (let ((response (jzon:parse body)))
-          (when (and (hash-table-p response)
-                     (gethash "message" response))
+          (a:when-let ((message (errorp response)))
             ;; TODO better error message
             ;; TODO add a restart
-            (error "http-request REST error: message = ~a" (gethash "message" response)))
+            (error "http-request REST error: message = ~a (~a)" message
+                   (jzon:stringify response)))
           (list response headers)))
     #++
     (error (condition)
@@ -97,4 +104,5 @@
            :for response = (http-request-gitlab %uri token)
            :while response
            :for (body headers) = response
+           ;; :do (break "body: ~s" body)
            :collect body)))
