@@ -69,7 +69,9 @@
 
 ;; TODO be able to limit by source (e.g. add a "list of source-ids")
 ;; criterion)
-(defun handler/search (query &optional type)
+(h:define-easy-handler (search-sources :uri "/search")
+    ((query :parameter-type 'string :request-type :get :real-name "q")
+     (type :parameter-type 'string :request-type :get :real-name "type"))
   (with-streaming-json-array ()
     #++
     (loop :for source :in *sources*
@@ -80,14 +82,6 @@
     (loop :for source :in *sources*
           ;; TODO perhaps make some kind of "streaming interface" for search-source?
           :do (search-source source query :limit 50 :type type))))
-
-(h:define-easy-handler (search-sources :uri "/search")
-    ((query :parameter-type 'string :request-type :get :real-name "q")
-     (type :parameter-type 'string :request-type :get :real-name "type"))
-  (setf (hunchentoot:content-type*) "text/javascript")
-  (if (str:non-blank-string-p query)
-      (handler/search query type)
-      "[]"))
 
 
 (h:define-easy-handler (get-item :uri "/item")

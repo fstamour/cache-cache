@@ -1,7 +1,6 @@
 (defpackage #:cache-cache.gitlab.search
   (:documentation "Interface to search the local cache for GitLab sources")
-  (:use #:cl
-        #:cache-cache.gitlab.source)
+  (:use #:cl #:cache-cache.gitlab.source)
   (:local-nicknames (#:a #:alexandria)
                     (#:lt #:local-time))
   (:import-from #:com.inuoe.jzon
@@ -11,6 +10,7 @@
                 #:issue-title
                 #:item-name-with-namespace
                 #:item-web-url
+                #:issue-created-at
                 #:issue-updated-at
                 #:issue-closed-at-p)
   (:import-from #:cache-cache.search
@@ -52,7 +52,7 @@
          (issue-updated-at issue2))
         closed2)))
 
-(defun issues-created-in-the-last-7-days ()
+(defun issues-created-in-the-last-7-days (source)
   (let ((last-week (lt:adjust-timestamp
                        (lt:today)
                      (offset :day -7))))
@@ -60,7 +60,7 @@
                    (lt:timestamp<
                     (lt:parse-rfc3339-timestring (issue-created-at issue))
                     last-week))
-               (a:hash-table-values *issues*))))
+               (a:hash-table-values (resources source :issue)))))
 
 
 
@@ -89,9 +89,9 @@
     (loop
       :for issue :in
                  (sort
-                  (if (str:non-empty-string-p query)
+                  (if (str:non-blank-string-p query)
                       (find-issues query source)
-                      (issues-created-in-the-last-7-days))
+                      (issues-created-in-the-last-7-days source))
                   #'compare-issues)
       :do (write-object*
            "type" "issue"

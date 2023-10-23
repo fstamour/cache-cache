@@ -33,7 +33,7 @@
 
 #+ (or)
 (time
- (find-last-update-time *issues*))
+ (find-last-update-time (resources (source-by-id 1) :issue)))
 
 
 

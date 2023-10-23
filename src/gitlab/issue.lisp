@@ -45,6 +45,7 @@
 
 ;; TODO Maybe make a modifier too (see serapeum)
 (defun issue-by-id (source id)
+  ;; TODO use the generic function "item"
   (gethash id (resources source :issue)))
 
 (defun issue-project (source issue-id)

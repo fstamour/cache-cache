@@ -42,6 +42,9 @@
 (defmethod initialize ((source gitlab-group-source) &key &allow-other-keys)
   (log:info "initializing ~a..." source)
   (read-cache source)
+  ;; TODO initialize issues and projects in parallel?
+  ;; TODO don't fail if initialize-issues or initialize-projects fails
+  ;; TODO MAKE-CRON-JOB
   (initialize-issues source)
   (initialize-projects source)
   (log-stats source)

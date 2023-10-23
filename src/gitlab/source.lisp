@@ -45,6 +45,8 @@
     :accessor token
     :documentation "The token used to authenticate with GitLab.")))
 
+
+
 (defclass gitlab-source (source)
   ((instance
     :initform (error ":instance must be specified")

@@ -16,3 +16,6 @@
   (find source-id *sources* :key #'source-id))
 
 #++(source-by-id 1)
+
+;; TODO a method on "resources" (to be renamed "topic") that accepts
+;; number (source-id) as the source.

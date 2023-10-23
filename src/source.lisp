@@ -17,11 +17,30 @@
     :reader name
     :documentation "The name of the source")
    ;; TODO slot: description
-   )
+   (topics
+    :initform (make-hash-table)
+    :initarg :topics
+    :reader topics
+    :documentation "The topics provided by this source"))
   (:documentation ""))
 
 (defmethod print-object ((source source) stream)
   (print-unreadable-object (source stream :type t :identity t)
-    (format stream "sid: ~s name: ~s"
+    (format stream "sid: ~s topics: ~s"
             (source-id source)
-            (name source))))
+            (topics source))))
+
+
+
+;; TODO retopics "resource" to "topic"
+(defclass topic ()
+  ((source
+    :initform (error ":source must be specified")
+    :initarg :source
+    :reader source
+    :documentation "The source of the topic")
+   (topics
+    :initform (error ":topics must be specified")
+    :initarg :topics
+    :reader topics
+    :documentation "The topics of the topic")))
