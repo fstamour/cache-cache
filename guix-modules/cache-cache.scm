@@ -40,7 +40,7 @@
   (package
    (name "sbcl-cache-cache")
    (version "0.0.1")
-   (source (local-file "../" "cache-cache" #:recursive? #t))
+   (source (local-file "." "cache-cache" #:recursive? #t))
    (build-system asdf-build-system/sbcl)
    (inputs (list sbcl-adopt
                  sbcl-drakma

@@ -52,6 +52,38 @@ https://github.com/vindarel/fuzzy-match
 - [[https://parenscript.common-lisp.dev/][homepage]]
 - [[https://parenscript.common-lisp.dev/][manual]]
 
+** Pagefind API
+
+> MIT Licence - Copyright 2022 CloudCannon
+
+https://pagefind.app/docs/api/
+
+#+begin_quote
+{
+  /* ... other result keys ... */
+  "url": "/url-of-the-page/",
+  "excerpt": "A small snippet of the <mark>static</mark> content, with the search term(s) highlighted in &lt;mark&gt; elements.",
+  "meta": {
+    "title": "The title from the first h1 element on the page",
+    "image": "/weka.png"
+  },
+  "sub_results": [
+    {
+        /* ... other sub_result keys ... */
+        "title": "The title from the first h1 element on the page",
+        "url": "/url-of-the-page/",
+        "excerpt": "A small snippet of the <mark>static</mark> content, with the search term(s) highlighted in &lt;mark&gt; elements",
+    },
+    {
+        /* ... other sub_result keys ... */
+        "title": "Inner text of some heading",
+        "url": "/url-of-the-page/#id-of-the-h2",
+        "excerpt": "A snippet of the <mark>static</mark> content, scoped between this anchor and the next one",
+    }
+  ]
+}
+#+end_quote
+
 * Handling multiple sources of data
 > The ultimate yak-shaving
 
@@ -108,6 +140,98 @@ I would like to do more stuff with the things I have cached
   - put them in an org-mode file!?
 - automated tasks?
   - useful for things that can take a while to index
+
+* Terminology Brainstorm
+
+** Current terminology
+
+| source |
+| items  |
+| topics |
+
+*** TODO Use "fetch" instead of "get"
+
+** From ElasticSearch/LogStash
+
+*** Data structure
+
+| term                   | definition                                                 |
+|------------------------+------------------------------------------------------------|
+| alias                  | Secondary name for a group of data streams or indices      |
+| document               | JSON                                                       |
+| index                  | Collection of documents                                    |
+| dataset                | A homogenous set collection of data                        |
+| event                  | Timestamped data                                           |
+| field reference        | A reference to an event field.                             |
+| field                  | Key-value pair in a document OR an event property          |
+| filter                 | Query that doesn't score                                   |
+| id                     |                                                            |
+| index pattern          | glob for index names                                       |
+| data stream            | ~ index for time series?  no, not only time series         |
+| index template         |                                                            |
+| runtime/scripted field |                                                            |
+| saved search           |                                                            |
+| computed field         | that one is from me, not ELK                               |
+| search session         | caching search results                                     |
+| search template        |                                                            |
+| snapshot               |                                                            |
+| segment                |                                                            |
+| source field           |                                                            |
+| system index           |                                                            |
+| tag                    | A keyword or label that you assign to Kibana saved objects |
+| term                   |                                                            |
+| token                  |                                                            |
+| workpad                |                                                            |
+| scratchpad             | that one is from me, not ELK                               |
+
+*** Data processing
+
+| term           | definition                                                      |
+|----------------+-----------------------------------------------------------------|
+| action         | what to do when a rule fires. a rule can have multiple actions. |
+| condition      |                                                                 |
+| rule           |                                                                 |
+| ingestion      | process of collecting data from data sources into ELK           |
+| pipeline       | "flow of event"   input -> filters -> output                    |
+| codec          |                                                                 |
+| broker         |                                                                 |
+| message broker |                                                                 |
+| aggregation    |                                                                 |
+| monitor        |                                                                 |
+| buffer         |                                                                 |
+| queue          |                                                                 |
+| query          |                                                                 |
+| lifecycle      |                                                                 |
+| [term] join    |                                                                 |
+| watcher        |                                                                 |
+| worker         | that one is from me, not ELK                                    |
+| mapping        |                                                                 |
+
+*** Other
+
+| data source  |                                                                |
+| data view    |                                                                |
+| datafeed     |                                                                |
+| endpoint     |                                                                |
+| input        | logstash's data source?                                        |
+| output       | a pipeline's destination?                                      |
+| flush        |                                                                |
+| merge        |                                                                |
+| jobs         |                                                                |
+| lens         |                                                                |
+| query syntax |                                                                |
+| namespace    |                                                                |
+| plan         | refers to the architecture, but I had terraform's plan in mind |
+| roolup       |                                                                |
+| connector    |                                                                |
+| data tier    | hot/warm/cold etc                                              |
+
+*** Clustering stuff
+
+| cluser |
+| node   |
+| shard  |
+
 
 * References
 

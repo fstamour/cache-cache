@@ -24,12 +24,7 @@
    #:token
    #:instance
 
-   #:group-id
-
-   #:initialize-epics
-   #:initialize-issues
-   #:initialize-labels
-   #:initialize-projects))
+   #:group-id))
 
 (in-package #:cache-cache.gitlab.source)
 
@@ -45,22 +40,12 @@
     :accessor token
     :documentation "The token used to authenticate with GitLab.")))
 
-
-
 (defclass gitlab-source (source)
   ((instance
     :initform (error ":instance must be specified")
     :initarg :instance
     :accessor instance
-    :documentation "The GitLab instance's information, contains the credentials.")
-   (%projects
-    :initform nil
-    :accessor %projects
-    :documentation "In-memory cache of projects.")
-   (%issues
-    :initform nil
-    :accessor %issues
-    :documentation "In-memory cache of issues."))
+    :documentation "The GitLab instance's information, contains the credentials."))
   (:documentation "An abstract source from GitLab."))
 
 (defmethod domain ((gitlab-source gitlab-source))
@@ -72,20 +57,6 @@
 (defun api-url (gitlab-source)
   "The GitLab API v4 root URL."
   (serapeum:fmt "https://~a/api/v4" (domain gitlab-source)))
-
-
-
-(defmethod resources ((source gitlab-source) (resouce (eql :project)))
-  (%projects source))
-
-(defmethod (setf resources) (new-resources (source gitlab-source) (resouce (eql :project)))
-  (setf (%projects source) new-resources))
-
-(defmethod resources ((source gitlab-source) (resouce (eql :issue)))
-  (%issues source))
-
-(defmethod (setf resources) (new-resources (source gitlab-source) (resouce (eql :issue)))
-  (setf (%issues source) new-resources))
 
 
 
@@ -107,15 +78,9 @@
 #++
 (equal (graphql-url *test-source*) "https://gitlab.com/api/graphql")
 
-
 
 
-(defmethod initialize-epics (source))
-(defmethod initialize-issues (source))
-(defmethod initialize-labels (source))
-(defmethod initialize-projects (source))
-
-
+#++
 (defclass gitlab-personal-source (gitlab-source)
   (
    ;; No need for slots, the token should be enough...
@@ -123,10 +88,16 @@
   (:documentation "Personal projects, groups, snippets, etc."))
 
 
+;;; Topics
 
-;; TODO
-(defun log-stats (source)
-  (log:info "There are currently ~D issues and ~D projects in memory."
-            ;; TODO use method "resources" instead
-            (a:if-let ((issues (%issues source))) (hash-table-count issues) 0)
-            (a:if-let ((projects (%projects source))) (hash-table-count projects) 0)))
+(defmethod supported-topics append ((source gitlab-source))
+  (list))
+
+#|
+issue
+project
+epic
+milestone
+label
+merge-request
+|#

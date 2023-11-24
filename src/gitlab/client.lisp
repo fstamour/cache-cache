@@ -33,7 +33,7 @@
 
 #+ (or)
 (time
- (find-last-update-time (resources (source-by-id 1) :issue)))
+ (find-last-update-time (items (source-by-id 1) :issue)))
 
 
 
@@ -61,3 +61,45 @@
                          (multiple-value-bind (,property-name present-p)
                              (gethash ,property-key item)
                            (and present-p (not (eq 'null ,property-name))))))))
+
+
+
+
+;;; TODO Handle rate-limiting gracefully https://docs.gitlab.com/ee/user/admin_area/settings/user_and_ip_rate_limits.html#response-headers
+;;; e.g.
+;;; - use some kind of queues (maybe chanl?)
+;;; - look at headers Rate-Limit-Remaining and RetryAfter
+(defun http-request-gitlab (uri token &rest rest)
+  (log:debug "Making a request to GitLab: \"~a\"..." uri)
+  ;; TODO Move that handler-case somewhere else, e.g. in the labmda
+  ;; ran by cl-cron.
+  (handler-case
+      (multiple-value-bind
+            (body status-code headers uri-object stream must-close reason-phrase)
+          ;; TODO use dexador instead
+          (apply #'drakma:http-request
+                 (ensure-uri-string uri)
+                 ;; TODO Parse "rest" to extract ":additional-headers"
+                 ;; Send the auth
+                 :additional-headers (list (token-header token))
+                 (alexandria:remove-from-plist rest
+                                               :additional-headers))
+        (declare (ignore stream must-close uri-object))
+        (declare (ignorable headers))
+        ;; status-code reason-phrase
+        (log:debug "~A ~A" status-code reason-phrase)
+        (setf *last-headers* headers
+              *last-body* body)
+        (let ((response (jzon:parse body)))
+          (a:when-let ((message (errorp response)))
+            ;; TODO better error message
+            ;; TODO specific condition...
+            ;; TODO add a restart
+            (error "http-request REST error: message = ~a (~a)" message
+                   (jzon:stringify response)))
+          (values response headers)))
+    #++
+    (error (condition)
+      (break)
+      (log:error "~a" condition)
+      nil)))

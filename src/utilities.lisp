@@ -1,7 +1,7 @@
 (in-package #:cache-cache)
 
 
-;;; URL manipulations
+;;; URI manipulations
 
 (defun ensure/ (x)
   (if (and (stringp x)
@@ -9,9 +9,12 @@
       x
       (format nil "~a/" x)))
 
-;; TODO don't hardcode the *base-uri*
-(defun make-uri (&rest part-list)
-  (loop :for uri = (puri:uri *base-uri*) :then (puri:merge-uris part uri)
+(defun make-uri (base &rest part-list)
+  (loop :for uri = (puri:uri (ensure/ base))
+          :then (puri:merge-uris (etypecase part
+                                   (string part)
+                                   (number (prin1-to-string part)))
+                                 uri)
         :for part :in (remove-if #'null part-list)
         :finally (return uri)))
 

@@ -25,10 +25,12 @@ There are also:
 
 
 ;; TODO get token from "source"
-(defun token-header (token)
+(defun token-header (token-designator)
   "Given a TOKEN, generate a cons representing the right token to
 send to GitLab for authentication"
-  (case (car token)
-    (:private (cons "PRIVATE-TOKEN" (cdr token)))))
+  (etypecase token-designator
+    (cons (ecase (car token-designator)
+            (:private (cons "PRIVATE-TOKEN" (cdr token-designator)))))
+    (gitlab-source (token-header (token token-designator)))))
 
 ;; (token-header)

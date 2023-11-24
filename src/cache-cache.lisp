@@ -71,7 +71,7 @@
 ;; criterion)
 (h:define-easy-handler (search-sources :uri "/search")
     ((query :parameter-type 'string :request-type :get :real-name "q")
-     (type :parameter-type 'string :request-type :get :real-name "type"))
+     (topic :parameter-type 'string :request-type :get :real-name "topic"))
   (with-streaming-json-array ()
     #++
     (loop :for source :in *sources*
@@ -81,7 +81,7 @@
                     :do  (write-search-result source search-result)))
     (loop :for source :in *sources*
           ;; TODO perhaps make some kind of "streaming interface" for search-source?
-          :do (search-source source query :limit 50 :type type))))
+          :do (search-source source query :limit 50 :topic topic))))
 
 
 (h:define-easy-handler (get-item :uri "/item")
@@ -96,7 +96,6 @@
 
 
 ;; TODO this has some GitLab-specific logic
-;; See log-stats
 #++
 (h:define-easy-handler (handle-statistics :uri "/stats")
     ()
@@ -130,19 +129,12 @@
     (format t "Is slynk loaded? ~A~%"
             (find-package '#:slynk))
     (format t "Is hunchentoot configured to catch errors? ~A~%" h:*catch-errors-p*)
-    (format t "Hunchentoot's h:*dispatch-table*: ~{~%  - ~A~}~%~%" h:*dispatch-table*)))
+    (format t "Hunchentoot's h:*dispatch-table*: ~{~%  - ~A~}~%~%" h:*dispatch-table*)
+    (format t "Log4cl's config:~%~a~%~%" (with-output-to-string (*standard-output*)
+                                           (log:config)))))
 
 
 ;;; Initialization
-
-(let ((cron-started nil))
-  (defun start-cron ()
-    "Function to start cron."
-    (if cron-started
-        (log:info "Cron already started.")
-        (progn
-          (log:info "Starting cron...")
-          (cl-cron:start-cron)))))
 
 (defun read-config ()
   (let ((config-file (uiop/configuration:xdg-config-home "cache-cache" "config.lisp")))
@@ -155,7 +147,7 @@
       (with-user-abort:with-user-abort
         (read-config)
         (map-sources #'initialize :threadp t)
-        (start-cron)
+        (cl-cron:start-cron)
         (start-server :port port :interface interface)
         ;; TODO don't hard-code the base url
         (log:info "Server started on \"http://localhost:~a\"." (server-port))
@@ -173,7 +165,10 @@
   (h:stop *server* :soft t)
   (log:info "Huchentoot stopped.")
   (log:info "Writing the persistent cache...")
-  (map-sources #'write-cache)
+  (map-sources #'(lambda (source)
+                   (map-supported-topics
+                    #'write-cache
+                    source)))
   (log:info "Persistent cache written.")
   (log:info "Quitting...")
   (uiop:quit code)

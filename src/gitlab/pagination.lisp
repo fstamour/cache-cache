@@ -56,53 +56,22 @@
         (gethash "error" response)
         (gethash "error_description" response))))
 
+(defun ensure-uri-string (uri)
+  (etypecase uri
+    (string uri)
+    (puri:uri (puri:render-uri uri nil))))
 
-;;; TODO Handle rate-limiting gracefully https://docs.gitlab.com/ee/user/admin_area/settings/user_and_ip_rate_limits.html#response-headers
-;;; e.g.
-;;; - use some kind of queues (maybe chanl?)
-;;; - look at headers Rate-Limit-Remaining and RetryAfter
-(defun http-request-gitlab (uri token &rest rest)
-  (log:debug "Making a request to GitLab: \"~a\"..." uri)
-  ;; TODO Move that handler-case somewhere else, e.g. in the labmda
-  ;; ran by cl-cron.
-  (handler-case
-      (multiple-value-bind
-            (body status-code headers uri-object stream must-close reason-phrase)
-          ;; TODO use dexador instead
-          (apply #'drakma:http-request
-                 uri
-                 ;; TODO Parse "rest" to extract ":additional-headers"
-                 ;; Send the auth
-                 :additional-headers (list (token-header token))
-                 (alexandria:remove-from-plist rest :additional-headers))
-        (declare (ignore stream must-close uri-object))
-        (declare (ignorable headers))
-        ;; status-code reason-phrase
-        (log:debug "~A ~A" status-code reason-phrase)
-        ;; (if )
-        (setf *last-headers* headers)
-        (let ((response (jzon:parse body)))
-          (a:when-let ((message (errorp response)))
-            ;; TODO better error message
-            ;; TODO add a restart
-            (error "http-request REST error: message = ~a (~a)" message
-                   (jzon:stringify response)))
-          (list response headers)))
-    #++
-    (error (condition)
-      (break)
-      (log:error "~a" condition)
-      nil)))
-
-(defun http-request-get-all (uri token)
+(defun http-request-get-all (uri token &optional callback)
   "Calls uri and all the \"next\" links, returns a vector of all the results concatenated."
   (apply #'concatenate 'vector
          (loop
            :for %uri = uri
              :then (extract-next-uri headers)
            :while %uri
-           :for response = (http-request-gitlab %uri token)
-           :while response
+           :for response = (multiple-value-list (http-request-gitlab %uri token))
+           :while
            :for (body headers) = response
            ;; :do (break "body: ~s" body)
+           :do (when callback (funcall callback body))
+               ;; TODO remove :collect, make CALLBACK mandatory
            :collect body)))

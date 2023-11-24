@@ -42,9 +42,10 @@
     :documentation "The id of the result, this id is source-specific."))
   (:documentation "Represents one item in a search-result"))
 
-(defun find-by (query source resource key)
-  "Return the RESOURCE in SOURCE that contains all the parts of QUERY in their KEY."
-  (search-in-list/and
-   (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
-   (alexandria:hash-table-values (resources source resource))
-   :key key))
+(defun find-by (query source topic key)
+  "Return the TOPIC in SOURCE that contains all the parts of QUERY in their KEY."
+  (when (items source topic)
+    (search-in-list/and
+     (split-sequence:split-sequence #\Space query :remove-empty-subseqs t)
+     (alexandria:hash-table-values (items source topic))
+     :key key)))

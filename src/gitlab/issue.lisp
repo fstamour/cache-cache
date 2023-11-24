@@ -3,6 +3,18 @@
 
 ;;; Issues
 
+(defun issue-uri (source &rest query-parameters &key project-id issue-iid &allow-other-keys)
+  (cache-cache::make-uri
+   (api-url source)
+   "projects/"
+   (cache-cache::ensure/ project-id)
+   "issues/"
+   issue-iid
+   (apply #'cache-cache::format-query
+          (a:remove-from-plist query-parameters
+                               :project-id
+                               :issue-iid))))
+
 (defun remove-moved-issues (issue-list)
   "Remove issues that were moved"
   (remove-if-not #'(lambda (issue)
@@ -46,7 +58,7 @@
 ;; TODO Maybe make a modifier too (see serapeum)
 (defun issue-by-id (source id)
   ;; TODO use the generic function "item"
-  (gethash id (resources source :issue)))
+  (gethash id (items source :issue)))
 
 (defun issue-project (source issue-id)
   (project-by-id source
@@ -54,14 +66,15 @@
 
 
 
-(defun get-all-issues (source)
+(defun get-all-issues (source &optional callback)
   (remove-moved-issues
    (http-request-get-all
     (format nil
             "~a/groups/~a/issues?per_page=100"
             (api-url source)
             (group-id source))
-    (token source))))
+    (token source)
+    callback)))
 
 #+ (or)
 (by-id
@@ -72,7 +85,7 @@
                (group-id source)))))
 
 (defun get-new-and-updated-issues (source)
-  (let* ((latest-time (find-last-update-time (resources source :issue)))
+  (let* ((latest-time (find-last-update-time (items source :issue)))
          (new-and-updated-issues
            (if latest-time
                (http-request-get-all
@@ -89,13 +102,22 @@
     (log4cl:log-info (length new-and-updated-issues))
     new-and-updated-issues))
 
-(defmethod initialize-issues ((source gitlab-group-source))
-  (if (resources source :issue)
+;; TODO -> initialize (issues)
+(defmethod initialize-topic ((source gitlab-group-source)
+                             (topic (eql :issue)))
+  (if (items source topic)
       (progn
         (log:info "Updating the list of issues from GitLab...")
+        ;; TODO export/import cache-cache::by-id
         (cache-cache::by-id (get-new-and-updated-issues source)
-                            (resources source :issue)))
+                            (items source topic)))
       (progn
         (log:info "Getting all the issues from GitLab...")
-        (setf (resources source :issue) (cache-cache::by-id (get-all-issues source)))
+        (setf (items source topic) (cache-cache::by-id (get-all-issues source)))
         (log:info "Got all the issues."))))
+
+#++
+(let ((source (first *sources*)))
+  (cl-cron:make-cron-job
+   #'(lambda () (initialize-topic source :issue))
+   :hash-key 'update-issues))

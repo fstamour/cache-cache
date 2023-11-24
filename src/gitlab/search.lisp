@@ -31,10 +31,13 @@
 
 
 ;; TODO utils
-(defun timestamp-string< (a b)
-  (lt:timestamp<
-   (lt:parse-rfc3339-timestring a)
-   (lt:parse-rfc3339-timestring b)))
+(defun timestamp-string< (a b &optional c)
+  (and
+   (lt:timestamp<
+    (lt:parse-rfc3339-timestring a)
+    (lt:parse-rfc3339-timestring b))
+   (or (not c)
+       (timestamp-string< b c))))
 
 ;; TODO utils
 (defun timestamp-string> (a b)
@@ -42,6 +45,7 @@
    (lt:parse-rfc3339-timestring a)
    (lt:parse-rfc3339-timestring b)))
 
+;; TODO rename to issue<
 (defun compare-issues (issue1 issue2)
   "Should ISSUE1 be shown before ISSUE2?"
   (let ((closed1 (issue-closed-at-p issue1))
@@ -60,8 +64,7 @@
                    (lt:timestamp<
                     (lt:parse-rfc3339-timestring (issue-created-at issue))
                     last-week))
-               (a:hash-table-values (resources source :issue)))))
-
+               (a:hash-table-values (items source :issue)))))
 
 
 ;; Testing find-issues
@@ -73,10 +76,10 @@
            (find-issues query
                         (source-by-id 1)))))
 
-(defun handler/search (query source &optional type)
+(defun handler/search (query source &optional topic)
   ;; Add projects
-  (when (or (null type)
-            (eq type :project))
+  (when (or (null topic)
+            (eq topic :project))
     (loop :for project :in (find-projects query source)
           :do (write-object*
                "type" "project"
@@ -84,8 +87,8 @@
                "text" (item-name-with-namespace project)
                "url" (format nil "~a/issues" (item-web-url project)))))
   ;; Add issues
-  (when (or (null type)
-            (eq type :issue))
+  (when (or (null topic)
+            (eq topic :issue))
     (loop
       :for issue :in
                  (sort

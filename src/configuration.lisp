@@ -17,5 +17,5 @@
 
 #++(source-by-id 1)
 
-;; TODO a method on "resources" (to be renamed "topic") that accepts
-;; number (source-id) as the source.
+;; TODO a method on "items" that accepts number (source-id) as the
+;; source.
